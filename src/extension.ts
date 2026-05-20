@@ -853,10 +853,21 @@ function failureMessage(event: NodeTestEvent): string {
   if (error instanceof Error) {
     return error.message;
   }
-  if (error && typeof error === "object" && "message" in error) {
-    const message = String(error.message);
-    const stack = "stack" in error ? String(error.stack) : undefined;
-    return stack && stack !== message ? `${message}\n${stack}` : message;
+  if (error && typeof error === "object") {
+    const cause = "cause" in error ? error.cause : undefined;
+    if (cause && typeof cause === "object" && "message" in cause) {
+      const message = String(cause.message);
+      const stack = "stack" in cause ? String(cause.stack) : undefined;
+      return stack && stack !== message ? `${message}\n${stack}` : message;
+    }
+    if ("message" in error) {
+      const message = String(error.message);
+      const stack = "stack" in error ? String(error.stack) : undefined;
+      return stack && stack !== message ? `${message}\n${stack}` : message;
+    }
+    if (typeof cause === "string") {
+      return cause;
+    }
   }
   return `${event.data?.name ?? "Test"} failed`;
 }
