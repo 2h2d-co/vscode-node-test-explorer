@@ -43,6 +43,7 @@ await rm(staging, { recursive: true, force: true });
 await mkdir(staging, { recursive: true });
 await cp(join(root, "dist"), join(staging, "dist"), { recursive: true });
 await cp(join(root, "README.md"), join(staging, "README.md"));
+await cp(join(root, "CHANGELOG.md"), join(staging, "CHANGELOG.md"));
 await cp(join(root, "LICENSE"), join(staging, "LICENSE"));
 await writeFile(
   join(staging, "package.json"),
