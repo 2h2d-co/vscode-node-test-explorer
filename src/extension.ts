@@ -67,7 +67,7 @@ export function activate(context: vscode.ExtensionContext): void {
         (vscode.workspace.workspaceFolders ?? []).map((workspaceFolder) =>
           vscode.workspace.findFiles(
             new vscode.RelativePattern(workspaceFolder, "**/*.{test,spec}.{js,mjs,ts,mts}"),
-            "**/{node_modules,dist,out,coverage,.git,references}/**",
+            "**/{node_modules,dist,out,coverage,.git}/**",
           ),
         ),
       )
