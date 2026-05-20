@@ -1,6 +1,9 @@
 import { spawn } from "node:child_process";
-import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { isAbsolute, join } from "node:path";
+
+import { currentVsixTarget, vsixTargetByName, vsixTargets } from "./vsix-targets.ts";
+import type { VsixTarget } from "./vsix-targets.ts";
 
 type ExtensionPackage = {
   name: string;
@@ -22,10 +25,17 @@ type ExtensionPackage = {
   dependencies?: Record<string, string>;
 };
 
+type PackageOptions = {
+  preRelease: boolean;
+  publish: boolean;
+  targets: readonly VsixTarget[];
+  outDir: string;
+};
+
 const root = process.cwd();
 const staging = join(root, ".vscode-vsix-staging");
-const preRelease = process.argv.includes("--pre-release");
-const publish = process.argv.includes("--publish");
+const options = packageOptions(process.argv.slice(2));
+const outputDir = isAbsolute(options.outDir) ? options.outDir : join(root, options.outDir);
 const parsedPackage: unknown = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
 
 if (!isExtensionPackage(parsedPackage)) {
@@ -39,44 +49,64 @@ if (!astGrepVersion) {
   throw new Error("package.json must declare @ast-grep/napi as a runtime dependency.");
 }
 
-await rm(staging, { recursive: true, force: true });
-await mkdir(staging, { recursive: true });
-await cp(join(root, "dist"), join(staging, "dist"), { recursive: true });
-await cp(join(root, "README.md"), join(staging, "README.md"));
-await cp(join(root, "CHANGELOG.md"), join(staging, "CHANGELOG.md"));
-await cp(join(root, "LICENSE"), join(staging, "LICENSE"));
-await writeFile(
-  join(staging, "package.json"),
-  `${JSON.stringify(
-    {
-      name: rootPackage.name,
-      displayName: rootPackage.displayName,
-      version: rootPackage.version,
-      publisher: rootPackage.publisher,
-      license: rootPackage.license,
-      repository: rootPackage.repository,
-      categories: rootPackage.categories,
-      keywords: rootPackage.keywords,
-      extensionKind: rootPackage.extensionKind,
-      description: rootPackage.description,
-      type: rootPackage.type,
-      main: rootPackage.main,
-      activationEvents: rootPackage.activationEvents,
-      contributes: rootPackage.contributes,
-      engines: rootPackage.engines,
-      dependencies: {
-        "@ast-grep/napi": astGrepVersion,
-      },
-    },
-    null,
-    2,
-  )}\n`,
-);
-await writeFile(join(staging, ".vscodeignore"), "src/**\nscripts/**\n*.tsbuildinfo\n");
+const packagedVsixPaths: string[] = [];
+for (const target of options.targets) {
+  // oxlint-disable-next-line no-await-in-loop -- each target needs an isolated native dependency install.
+  const vsixPath = await packageTarget(rootPackage, astGrepVersion, target, options.preRelease);
+  packagedVsixPaths.push(vsixPath);
+}
 
-await run(
-  "npm",
-  [
+if (options.publish) {
+  const publishArgs = ["publish", "--skip-duplicate"];
+  if (options.preRelease) {
+    publishArgs.push("--pre-release");
+  }
+  publishArgs.push("--packagePath", ...packagedVsixPaths);
+  await run("vsce", publishArgs, root);
+}
+
+async function packageTarget(
+  manifest: ExtensionPackage,
+  packageAstGrepVersion: string,
+  target: VsixTarget,
+  preRelease: boolean,
+): Promise<string> {
+  await rm(staging, { recursive: true, force: true });
+  await mkdir(staging, { recursive: true });
+  await cp(join(root, "dist"), join(staging, "dist"), { recursive: true });
+  await cp(join(root, "README.md"), join(staging, "README.md"));
+  await cp(join(root, "CHANGELOG.md"), join(staging, "CHANGELOG.md"));
+  await cp(join(root, "LICENSE"), join(staging, "LICENSE"));
+  await writeFile(
+    join(staging, "package.json"),
+    `${JSON.stringify(
+      {
+        name: manifest.name,
+        displayName: manifest.displayName,
+        version: manifest.version,
+        publisher: manifest.publisher,
+        license: manifest.license,
+        repository: manifest.repository,
+        categories: manifest.categories,
+        keywords: manifest.keywords,
+        extensionKind: manifest.extensionKind,
+        description: manifest.description,
+        type: manifest.type,
+        main: manifest.main,
+        activationEvents: manifest.activationEvents,
+        contributes: manifest.contributes,
+        engines: manifest.engines,
+        dependencies: {
+          "@ast-grep/napi": packageAstGrepVersion,
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  await writeFile(join(staging, ".vscodeignore"), "src/**\nscripts/**\n*.tsbuildinfo\n");
+
+  const npmInstallArgs = [
     "install",
     "--omit=dev",
     "--include=optional",
@@ -84,26 +114,85 @@ await run(
     "--no-audit",
     "--no-fund",
     "--package-lock=false",
-  ],
-  staging,
-);
-
-const target = vsixTarget();
-const vsixPath = join(root, `${rootPackage.name}-${rootPackage.version}-${target}.vsix`);
-const packageArgs = ["package", "--target", target, "--out", vsixPath];
-if (preRelease) {
-  packageArgs.push("--pre-release");
-}
-await run("vsce", packageArgs, staging);
-
-console.log(`Packaged ${vsixPath}`);
-
-if (publish) {
-  const publishArgs = ["publish", "--packagePath", vsixPath];
-  if (preRelease) {
-    publishArgs.push("--pre-release");
+    `--os=${target.npmOs}`,
+    `--cpu=${target.npmCpu}`,
+  ];
+  if (target.npmLibc) {
+    npmInstallArgs.push(`--libc=${target.npmLibc}`);
   }
-  await run("vsce", publishArgs, staging);
+  await run("npm", npmInstallArgs, staging);
+  await access(join(staging, "node_modules", "@ast-grep", target.astGrepPackage));
+
+  await mkdir(outputDir, { recursive: true });
+  const vsixPath = join(outputDir, `${manifest.name}-${manifest.version}-${target.name}.vsix`);
+  const packageArgs = ["package", "--target", target.name, "--out", vsixPath];
+  if (preRelease) {
+    packageArgs.push("--pre-release");
+  }
+  await run("vsce", packageArgs, staging);
+
+  console.log(`Packaged ${vsixPath}`);
+  return vsixPath;
+}
+
+function packageOptions(args: readonly string[]): PackageOptions {
+  const targetNames: string[] = [];
+  let allTargets = false;
+  let preRelease = false;
+  let publish = false;
+  let outDir = "artifacts/vsix";
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (!arg) {
+      throw new Error("Missing command line option.");
+    }
+    if (arg === "--all-targets") {
+      allTargets = true;
+    } else if (arg === "--pre-release") {
+      preRelease = true;
+    } else if (arg === "--publish") {
+      publish = true;
+    } else if (arg === "--out-dir") {
+      const value = args[index + 1];
+      if (!value) {
+        throw new Error("--out-dir requires a directory path.");
+      }
+      outDir = value;
+      index += 1;
+    } else if (arg.startsWith("--out-dir=")) {
+      outDir = arg.slice("--out-dir=".length);
+    } else if (arg === "--target") {
+      const targetName = args[index + 1];
+      if (!targetName) {
+        throw new Error("--target requires a VSIX target name.");
+      }
+      targetNames.push(targetName);
+      index += 1;
+    } else if (arg.startsWith("--target=")) {
+      targetNames.push(arg.slice("--target=".length));
+    } else {
+      throw new Error(`Unknown option ${arg}`);
+    }
+  }
+
+  if (allTargets && targetNames.length > 0) {
+    throw new Error("Use either --all-targets or --target, not both.");
+  }
+
+  const targets = allTargets
+    ? vsixTargets
+    : targetNames.length > 0
+      ? targetNames.map((name) => {
+          const target = vsixTargetByName(name);
+          if (!target) {
+            throw new Error(`Unsupported VSIX target ${name}.`);
+          }
+          return target;
+        })
+      : [currentVsixTarget()];
+
+  return { preRelease, publish, targets, outDir };
 }
 
 function isExtensionPackage(value: unknown): value is ExtensionPackage {
@@ -129,27 +218,4 @@ function run(command: string, args: string[], cwd: string): Promise<void> {
       }
     });
   });
-}
-
-function vsixTarget(): string {
-  if (process.platform === "darwin" && process.arch === "arm64") {
-    return "darwin-arm64";
-  }
-  if (process.platform === "darwin" && process.arch === "x64") {
-    return "darwin-x64";
-  }
-  if (process.platform === "linux" && process.arch === "arm64") {
-    return "linux-arm64";
-  }
-  if (process.platform === "linux" && process.arch === "x64") {
-    return "linux-x64";
-  }
-  if (process.platform === "win32" && process.arch === "arm64") {
-    return "win32-arm64";
-  }
-  if (process.platform === "win32" && process.arch === "x64") {
-    return "win32-x64";
-  }
-
-  throw new Error(`Unsupported VSIX target for ${process.platform}/${process.arch}.`);
 }

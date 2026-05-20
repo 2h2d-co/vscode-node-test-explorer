@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .vscode-vsix-staging/
+artifacts/
 mise.local.toml
 LEARNINGS.md
 DESIRES.md

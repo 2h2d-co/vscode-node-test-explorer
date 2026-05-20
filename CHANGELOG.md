@@ -2,6 +2,12 @@
 
 All notable changes to this extension are documented here.
 
+## 0.0.5 - 2026-05-20
+
+- Added local release automation for tagging, GitHub Release creation, checksums, and Marketplace publishing.
+- Added all supported native-platform VSIX packaging targets.
+- Moved generated VSIX artifacts under `artifacts/vsix/`.
+
 ## 0.0.4 - 2026-05-20
 
 - Added parsed failure stack traces so VS Code can navigate to failure locations from test results.

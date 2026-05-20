@@ -56,7 +56,10 @@ pnpm install
 pnpm compile
 pnpm package
 pnpm package:pre-release
+pnpm package:pre-release:all
 ```
+
+Generated VSIX files are written under `artifacts/vsix/`.
 
 `mise.toml` pins Node and pnpm and adds `node_modules/.bin` to `PATH`.
 
@@ -64,4 +67,12 @@ pnpm package:pre-release
 
 ```sh
 pnpm publish:pre-release
+```
+
+## Releasing
+
+Update `package.json` and `CHANGELOG.md`, commit the changes, then run:
+
+```sh
+pnpm release:pre-release
 ```
