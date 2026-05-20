@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.vscode-vsix-staging/
+mise.local.toml
+LEARNINGS.md
+DESIRES.md
+MISTAKES.md
+RESEARCH.md
+*.vsix
+.DS_Store

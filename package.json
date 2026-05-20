@@ -1,0 +1,78 @@
+{
+  "name": "vscode-node-test-explorer",
+  "displayName": "node:test Explorer",
+  "version": "0.0.1",
+  "private": true,
+  "description": "VS Code test integration for modern ESM node:test projects.",
+  "categories": [
+    "Testing"
+  ],
+  "keywords": [
+    "node:test",
+    "nodejs",
+    "test explorer",
+    "testing",
+    "typescript"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/2h2d-co/vscode-node-test-explorer.git"
+  },
+  "publisher": "2h2d",
+  "type": "module",
+  "main": "./dist/extension.js",
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "typecheck": "tsc --noEmit -p . && tsc -p scripts/tsconfig.json",
+    "lint": "oxlint src --type-aware --type-check && oxlint scripts",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check",
+    "package": "pnpm compile && node scripts/package-vsix.ts",
+    "package:pre-release": "pnpm compile && node scripts/package-vsix.ts --pre-release",
+    "publish:pre-release": "pnpm compile && node scripts/package-vsix.ts --pre-release --publish"
+  },
+  "dependencies": {
+    "@ast-grep/napi": "0.42.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.4",
+    "@types/vscode": "1.120.0",
+    "@vscode/vsce": "3.9.1",
+    "oxfmt": "0.51.0",
+    "oxlint": "1.66.0",
+    "oxlint-tsgolint": "0.23.0",
+    "typescript": "6.0.3"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-node-test-explorer.refresh",
+        "title": "node:test Explorer: Refresh Tests"
+      }
+    ],
+    "configuration": {
+      "title": "node:test Explorer",
+      "properties": {
+        "vscode-node-test-explorer.nodePath": {
+          "type": "string",
+          "default": "node",
+          "description": "Node 24 executable used for test execution. The extension does not discover or activate version managers."
+        }
+      }
+    }
+  },
+  "activationEvents": [
+    "onCommand:vscode-node-test-explorer.refresh",
+    "onStartupFinished"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "packageManager": "pnpm@11.1.3"
+}

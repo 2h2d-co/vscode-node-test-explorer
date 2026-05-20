@@ -1,0 +1,9 @@
+.git/**
+.vscode-vsix-staging/**
+node_modules/.cache/**
+src/**
+*.tsbuildinfo
+LEARNINGS.md
+DESIRES.md
+MISTAKES.md
+RESEARCH.md
