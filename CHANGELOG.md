@@ -2,6 +2,10 @@
 
 All notable changes to this extension are documented here.
 
+## 0.0.6 - 2026-05-20
+
+- Added Marketplace extension icon.
+
 ## 0.0.5 - 2026-05-20
 
 - Added local release automation for tagging, GitHub Release creation, checksums, and Marketplace publishing.

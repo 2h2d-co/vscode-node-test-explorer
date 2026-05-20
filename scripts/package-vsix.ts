@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { isAbsolute, join } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
 
 import { currentVsixTarget, vsixTargetByName, vsixTargets } from "./vsix-targets.ts";
 import type { VsixTarget } from "./vsix-targets.ts";
@@ -17,6 +17,7 @@ type ExtensionPackage = {
   extensionKind?: string[];
   private?: boolean;
   description?: string;
+  icon?: string;
   type?: string;
   main?: string;
   activationEvents?: string[];
@@ -77,6 +78,10 @@ async function packageTarget(
   await cp(join(root, "README.md"), join(staging, "README.md"));
   await cp(join(root, "CHANGELOG.md"), join(staging, "CHANGELOG.md"));
   await cp(join(root, "LICENSE"), join(staging, "LICENSE"));
+  if (manifest.icon) {
+    await mkdir(join(staging, dirname(manifest.icon)), { recursive: true });
+    await cp(join(root, manifest.icon), join(staging, manifest.icon));
+  }
   await writeFile(
     join(staging, "package.json"),
     `${JSON.stringify(
@@ -91,6 +96,7 @@ async function packageTarget(
         keywords: manifest.keywords,
         extensionKind: manifest.extensionKind,
         description: manifest.description,
+        icon: manifest.icon,
         type: manifest.type,
         main: manifest.main,
         activationEvents: manifest.activationEvents,
