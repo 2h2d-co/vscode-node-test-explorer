@@ -817,7 +817,7 @@ function handleNodeTestReporterLine(
   } else if (event.type === "test:pass") {
     run.passed(item, duration);
   } else if (event.type === "test:fail") {
-    run.failed(item, new vscode.TestMessage(failureMessage(event)), duration);
+    run.failed(item, testMessageForFailure(event), duration);
   } else if (event.type === "test:skip" || event.type === "test:todo") {
     run.skipped(item);
   }
@@ -848,26 +848,108 @@ function itemForNodeTestEvent(
   return locationToItem.get(`${filePath}:${data.line - 1}:${data.column - 1}`);
 }
 
+function testMessageForFailure(event: NodeTestEvent): vscode.TestMessage {
+  const failure = failureDetails(event);
+  const message = new vscode.TestMessage(failure.message);
+  if (failure.stack) {
+    const stackTrace = stackFrames(failure.stack);
+    if (stackTrace.length > 0) {
+      message.stackTrace = stackTrace;
+      const firstFrame = stackTrace[0];
+      if (firstFrame?.uri && firstFrame.position) {
+        message.location = new vscode.Location(firstFrame.uri, firstFrame.position);
+      }
+    }
+  }
+  return message;
+}
+
 function failureMessage(event: NodeTestEvent): string {
+  return failureDetails(event).message;
+}
+
+function failureDetails(event: NodeTestEvent): { message: string; stack?: string | undefined } {
   const error = event.data?.details?.error;
   if (error instanceof Error) {
-    return error.message;
+    return { message: error.message, stack: error.stack };
   }
   if (error && typeof error === "object") {
     const cause = "cause" in error ? error.cause : undefined;
     if (cause && typeof cause === "object" && "message" in cause) {
-      const message = String(cause.message);
-      const stack = "stack" in cause ? String(cause.stack) : undefined;
-      return stack && stack !== message ? `${message}\n${stack}` : message;
+      return {
+        message: String(cause.message),
+        stack: "stack" in cause ? String(cause.stack) : undefined,
+      };
     }
     if ("message" in error) {
-      const message = String(error.message);
-      const stack = "stack" in error ? String(error.stack) : undefined;
-      return stack && stack !== message ? `${message}\n${stack}` : message;
+      return {
+        message: String(error.message),
+        stack: "stack" in error ? String(error.stack) : undefined,
+      };
     }
     if (typeof cause === "string") {
-      return cause;
+      return { message: cause };
     }
   }
-  return `${event.data?.name ?? "Test"} failed`;
+  return { message: `${event.data?.name ?? "Test"} failed` };
+}
+
+function stackFrames(stack: string): vscode.TestMessageStackFrame[] {
+  const frames: vscode.TestMessageStackFrame[] = [];
+  for (const line of stack.split("\n")) {
+    const frame = stackFrame(line);
+    if (frame) {
+      frames.push(frame);
+    }
+  }
+  return frames;
+}
+
+function stackFrame(line: string): vscode.TestMessageStackFrame | undefined {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("at ")) {
+    return undefined;
+  }
+
+  const frame = trimmed.slice(3);
+  let label = "";
+  let locationText = frame;
+  const parenthesizedLocationStart = frame.lastIndexOf(" (");
+  if (parenthesizedLocationStart !== -1 && frame.endsWith(")")) {
+    label = frame.slice(0, parenthesizedLocationStart);
+    locationText = frame.slice(parenthesizedLocationStart + 2, -1);
+  }
+
+  const match = /^(.*):(\d+):(\d+)$/.exec(locationText);
+  if (!match) {
+    return undefined;
+  }
+
+  const [, source, lineText, columnText] = match;
+  const lineNumber = Number(lineText);
+  const columnNumber = Number(columnText);
+  if (!source || !Number.isInteger(lineNumber) || !Number.isInteger(columnNumber)) {
+    return undefined;
+  }
+
+  const uri = uriForStackSource(source);
+  if (!uri) {
+    return undefined;
+  }
+
+  return new vscode.TestMessageStackFrame(
+    label || basename(uri.fsPath),
+    uri,
+    new vscode.Position(Math.max(lineNumber - 1, 0), Math.max(columnNumber - 1, 0)),
+  );
+}
+
+function uriForStackSource(source: string): vscode.Uri | undefined {
+  if (source.startsWith("file://")) {
+    return vscode.Uri.parse(source);
+  }
+  if (source.startsWith("/") || /^[A-Za-z]:[\\/]/.test(source) || source.startsWith("\\\\")) {
+    return vscode.Uri.file(source);
+  }
+  return undefined;
 }
