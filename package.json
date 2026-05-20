@@ -1,7 +1,7 @@
 {
   "name": "vscode-node-test-explorer",
   "displayName": "Modern node:test Explorer",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "description": "VS Code test integration for modern ESM node:test projects.",
   "categories": [
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@types/node": "24.12.4",
-    "@types/vscode": "1.120.0",
+    "@types/vscode": "1.100.0",
     "@vscode/vsce": "3.9.1",
     "oxfmt": "0.51.0",
     "oxlint": "1.66.0",

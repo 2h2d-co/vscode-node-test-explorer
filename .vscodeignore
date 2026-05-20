@@ -1,9 +1,13 @@
 .git/**
 .vscode-vsix-staging/**
 artifacts/**
+references/**
 node_modules/.cache/**
 src/**
 *.tsbuildinfo
+*.vsix
+mise.local.toml
+.DS_Store
 LEARNINGS.md
 DESIRES.md
 MISTAKES.md

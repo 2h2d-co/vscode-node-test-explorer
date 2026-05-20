@@ -2,6 +2,11 @@
 
 All notable changes to this extension are documented here.
 
+## 0.0.8 - 2026-05-20
+
+- Tightened default VSIX ignore rules for local files and generated artifacts.
+- Aligned VS Code API typings with the declared minimum VS Code engine version.
+
 ## 0.0.7 - 2026-05-20
 
 - Renamed the Marketplace display name to `Modern node:test Explorer`.
