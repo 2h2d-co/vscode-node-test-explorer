@@ -1,4 +1,4 @@
-# node:test Explorer
+# Modern node:test Explorer
 
 VS Code Test Explorer integration for modern `node:test` projects.
 

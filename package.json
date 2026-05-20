@@ -1,7 +1,7 @@
 {
   "name": "vscode-node-test-explorer",
-  "displayName": "node:test Explorer",
-  "version": "0.0.6",
+  "displayName": "Modern node:test Explorer",
+  "version": "0.0.7",
   "private": true,
   "description": "VS Code test integration for modern ESM node:test projects.",
   "categories": [
@@ -53,11 +53,11 @@
     "commands": [
       {
         "command": "vscode-node-test-explorer.refresh",
-        "title": "node:test Explorer: Refresh Tests"
+        "title": "Modern node:test Explorer: Refresh Tests"
       }
     ],
     "configuration": {
-      "title": "node:test Explorer",
+      "title": "Modern node:test Explorer",
       "properties": {
         "vscode-node-test-explorer.nodePath": {
           "type": "string",

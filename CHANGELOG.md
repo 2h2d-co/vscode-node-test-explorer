@@ -2,6 +2,10 @@
 
 All notable changes to this extension are documented here.
 
+## 0.0.7 - 2026-05-20
+
+- Renamed the Marketplace display name to `Modern node:test Explorer`.
+
 ## 0.0.6 - 2026-05-20
 
 - Added Marketplace extension icon.
