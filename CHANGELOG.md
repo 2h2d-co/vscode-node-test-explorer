@@ -2,12 +2,14 @@
 
 All notable changes to this extension are documented here.
 
-## Unreleased
+## 0.0.9 - 2026-05-20
 
 - Declared limited Restricted Mode support: static test discovery remains available, but running tests is blocked until the workspace is trusted.
 - Declared virtual workspaces unsupported.
 - Trimmed generated type declarations and source maps from packaged VSIX files.
 - Split the refresh command contribution into separate category and title fields.
+- Discover tests on activation so gutter run buttons appear without opening Test Explorer first.
+- Restored rich failure messages for non-JSON-serializable thrown values and added fallback failure locations from Node test events.
 
 ## 0.0.8 - 2026-05-20
 

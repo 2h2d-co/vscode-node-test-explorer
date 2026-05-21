@@ -467,6 +467,8 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
   );
+
+  void discoverWorkspace();
 }
 
 export function deactivate(): void {}
@@ -895,6 +897,14 @@ function testMessageForFailure(event: NodeTestEvent): vscode.TestMessage {
       }
     }
   }
+
+  if (!message.location) {
+    const eventLocation = locationForNodeTestEvent(event);
+    if (eventLocation) {
+      message.location = eventLocation;
+    }
+  }
+
   return message;
 }
 
@@ -903,29 +913,100 @@ function failureMessage(event: NodeTestEvent): string {
 }
 
 function failureDetails(event: NodeTestEvent): { message: string; stack?: string | undefined } {
-  const error = event.data?.details?.error;
-  if (error instanceof Error) {
-    return { message: error.message, stack: error.stack };
-  }
-  if (error && typeof error === "object") {
-    const cause = "cause" in error ? error.cause : undefined;
-    if (cause && typeof cause === "object" && "message" in cause) {
-      return {
-        message: String(cause.message),
-        stack: "stack" in cause ? String(cause.stack) : undefined,
-      };
-    }
-    if ("message" in error) {
-      return {
-        message: String(error.message),
-        stack: "stack" in error ? String(error.stack) : undefined,
-      };
-    }
-    if (typeof cause === "string") {
-      return { message: cause };
-    }
+  const details = failureDetailsForValue(event.data?.details?.error);
+  if (details?.message) {
+    return details;
   }
   return { message: `${event.data?.name ?? "Test"} failed` };
+}
+
+function failureDetailsForValue(
+  value: unknown,
+): { message: string; stack?: string | undefined } | undefined {
+  if (value instanceof Error) {
+    return {
+      message: value.message || value.name,
+      stack: value.stack,
+    };
+  }
+
+  if (typeof value === "string") {
+    return { message: value };
+  }
+
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+    return { message: `${value}` };
+  }
+
+  if (typeof value === "symbol") {
+    return { message: value.description ? `Symbol(${value.description})` : "Symbol()" };
+  }
+
+  if (typeof value === "function") {
+    return { message: `[Function ${value.name || "anonymous"}]` };
+  }
+
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const failureType = stringProperty(value, "failureType");
+  const cause = "cause" in value ? value.cause : undefined;
+  if (cause !== undefined) {
+    const causeDetails = failureDetailsForValue(cause);
+    if (
+      causeDetails?.message &&
+      (causeDetails.message !== "test failed" || failureType !== "subtestsFailed")
+    ) {
+      return causeDetails;
+    }
+  }
+
+  const message = stringProperty(value, "message");
+  const inspected = stringProperty(value, "inspect");
+  const stack = stringProperty(value, "stack");
+  const fallback = inspected ?? jsonSummary(value);
+  const messageText = message ?? fallback;
+  if (messageText) {
+    return { message: messageText, stack };
+  }
+
+  return undefined;
+}
+
+function stringProperty(value: object, key: string): string | undefined {
+  if (!(key in value)) {
+    return undefined;
+  }
+
+  const descriptor = Object.getOwnPropertyDescriptor(value, key);
+  if (!descriptor || !("value" in descriptor)) {
+    return undefined;
+  }
+
+  const property: unknown = descriptor.value;
+  return typeof property === "string" && property.length > 0 ? property : undefined;
+}
+
+function jsonSummary(value: object): string | undefined {
+  try {
+    const summary = JSON.stringify(value);
+    return summary && summary !== "{}" ? summary : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function locationForNodeTestEvent(event: NodeTestEvent): vscode.Location | undefined {
+  const data = event.data;
+  if (!data?.file || typeof data.line !== "number" || typeof data.column !== "number") {
+    return undefined;
+  }
+
+  return new vscode.Location(
+    vscode.Uri.file(data.file),
+    new vscode.Position(Math.max(data.line - 1, 0), Math.max(data.column - 1, 0)),
+  );
 }
 
 function stackFrames(stack: string): vscode.TestMessageStackFrame[] {
