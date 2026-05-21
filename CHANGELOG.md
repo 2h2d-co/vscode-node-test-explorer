@@ -2,6 +2,13 @@
 
 All notable changes to this extension are documented here.
 
+## Unreleased
+
+- Declared limited Restricted Mode support: static test discovery remains available, but running tests is blocked until the workspace is trusted.
+- Declared virtual workspaces unsupported.
+- Trimmed generated type declarations and source maps from packaged VSIX files.
+- Split the refresh command contribution into separate category and title fields.
+
 ## 0.0.8 - 2026-05-20
 
 - Tightened default VSIX ignore rules for local files and generated artifacts.

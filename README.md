@@ -15,6 +15,8 @@ VS Code Test Explorer integration for modern `node:test` projects.
 - VS Code 1.100 or newer.
 - Node 24 available to the extension for test execution.
 - ESM test files.
+- A local, non-virtual workspace.
+- A trusted workspace for running tests.
 
 ## Supported test files
 
@@ -30,6 +32,12 @@ The extension discovers tests in:
 - `*.spec.mts`
 
 It intentionally supports only modern ESM `node:test` projects. CommonJS, legacy transpilers, compatibility loaders, TSX, and non-Node test frameworks are outside this extension's scope.
+
+## Workspace Trust and virtual workspaces
+
+In Restricted Mode, the extension can discover tests but will not run them because `node:test` executes workspace code. Trust the workspace before running tests.
+
+Virtual workspaces are not supported because discovery and execution require local file paths and a Node process in the workspace extension host.
 
 ## Node path
 

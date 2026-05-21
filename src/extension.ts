@@ -51,6 +51,9 @@ type NodeTestEvent = {
   };
 };
 
+const UNTRUSTED_WORKSPACE_RUN_MESSAGE =
+  "Running node:test requires trusting this workspace because it executes workspace code.";
+
 export function activate(context: vscode.ExtensionContext): void {
   const controller = vscode.tests.createTestController("vscode-node-test-explorer", "node:test");
   const itemData = new Map<string, TestData>();
@@ -340,6 +343,23 @@ export function activate(context: vscode.ExtensionContext): void {
     async (request, token) => {
       const run = controller.createTestRun(request);
       try {
+        if (!vscode.workspace.isTrusted) {
+          const excluded = new Set(request.exclude?.map((item) => item.id) ?? []);
+          const message = new vscode.TestMessage(UNTRUSTED_WORKSPACE_RUN_MESSAGE);
+          const selected: vscode.TestItem[] = [];
+          if (request.include) {
+            selected.push(...request.include);
+          } else {
+            controller.items.forEach((item) => selected.push(item));
+          }
+
+          run.appendOutput(`${UNTRUSTED_WORKSPACE_RUN_MESSAGE}\r\n`);
+          for (const item of selected) {
+            erroredTree(item, excluded, run, message);
+          }
+          return;
+        }
+
         await saveDirtyTestDocuments(request.include);
         const requestedIds = request.include?.map((item) => item.id);
         await discoverWorkspace();
@@ -660,6 +680,20 @@ function enqueueTree(
 
   run.enqueued(item);
   item.children.forEach((child) => enqueueTree(child, excluded, run));
+}
+
+function erroredTree(
+  item: vscode.TestItem,
+  excluded: ReadonlySet<string>,
+  run: vscode.TestRun,
+  message: vscode.TestMessage,
+): void {
+  if (excluded.has(item.id)) {
+    return;
+  }
+
+  run.errored(item, message);
+  item.children.forEach((child) => erroredTree(child, excluded, run, message));
 }
 
 async function ensureNode24(token: vscode.CancellationToken): Promise<string> {

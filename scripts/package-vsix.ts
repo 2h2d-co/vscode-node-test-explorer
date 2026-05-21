@@ -15,6 +15,7 @@ type ExtensionPackage = {
   categories?: string[];
   keywords?: string[];
   extensionKind?: string[];
+  capabilities?: unknown;
   private?: boolean;
   description?: string;
   icon?: string;
@@ -95,6 +96,7 @@ async function packageTarget(
         categories: manifest.categories,
         keywords: manifest.keywords,
         extensionKind: manifest.extensionKind,
+        capabilities: manifest.capabilities,
         description: manifest.description,
         icon: manifest.icon,
         type: manifest.type,
@@ -110,7 +112,10 @@ async function packageTarget(
       2,
     )}\n`,
   );
-  await writeFile(join(staging, ".vscodeignore"), "src/**\nscripts/**\n*.tsbuildinfo\n");
+  await writeFile(
+    join(staging, ".vscodeignore"),
+    "src/**\nscripts/**\n*.tsbuildinfo\n**/*.d.ts\n**/*.js.map\n",
+  );
 
   const npmInstallArgs = [
     "install",
