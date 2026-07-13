@@ -38,9 +38,7 @@
     "package": "pnpm compile && node scripts/package-vsix.ts",
     "package:all": "pnpm compile && node scripts/package-vsix.ts --all-targets",
     "package:pre-release": "pnpm compile && node scripts/package-vsix.ts --pre-release",
-    "package:pre-release:all": "pnpm compile && node scripts/package-vsix.ts --all-targets --pre-release",
-    "publish:pre-release": "pnpm compile && node scripts/package-vsix.ts --all-targets --pre-release --publish",
-    "release:pre-release": "node scripts/release.ts --pre-release --publish-marketplace"
+    "package:pre-release:all": "pnpm compile && node scripts/package-vsix.ts --all-targets --pre-release"
   },
   "dependencies": {
     "@ast-grep/napi": "0.42.2"

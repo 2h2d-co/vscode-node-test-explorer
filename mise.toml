@@ -1,4 +1,13 @@
+[settings]
+lockfile = true
+locked = true
+minimum_release_age = "7d"
+
 [tools]
+hk = { version = "1.48.0", postinstall = "hk install --mise" }
+cocogitto = "7.0.0"
+actionlint = "1.7.12"
+zizmor = "1.26.1"
 node = "24.15.0"
 pnpm = "11.1.3"
 

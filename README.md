@@ -71,16 +71,6 @@ Generated VSIX files are written under `artifacts/vsix/`.
 
 `mise.toml` pins Node and pnpm and adds `node_modules/.bin` to `PATH`.
 
-## Publishing
-
-```sh
-pnpm publish:pre-release
-```
-
 ## Releasing
 
-Update `package.json` and `CHANGELOG.md`, commit the changes, then run:
-
-```sh
-pnpm release:pre-release
-```
+Update `package.json` and `CHANGELOG.md`, create and push the matching `v<version>` release tag, and let the release workflow validate, package, publish to the VS Code Marketplace, and create the GitHub release. Prerelease versions are published with the Marketplace prerelease flag.

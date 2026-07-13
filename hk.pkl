@@ -1,0 +1,12 @@
+amends "package://github.com/2h2d-co/hk-config/releases/download/v0.0.5/hk-config@0.0.5#/Base.pkl"
+
+import "package://github.com/2h2d-co/hk-config/releases/download/v0.0.5/hk-config@0.0.5#/Base.pkl" as Base
+import "package://github.com/2h2d-co/hk-config/releases/download/v0.0.5/hk-config@0.0.5#/GitHubActions.pkl" as GitHubActions
+import "package://github.com/2h2d-co/hk-config/releases/download/v0.0.5/hk-config@0.0.5#/TypeScript.pkl" as TypeScript
+
+local steps = (Base.baseSteps) {
+  ...TypeScript.typeScriptSteps
+  ...GitHubActions.gitHubActionsSteps
+}
+
+hooks = Base.defaultHooks(true, steps)
