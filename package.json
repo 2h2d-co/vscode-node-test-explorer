@@ -15,6 +15,11 @@
     "typescript"
   ],
   "license": "MIT",
+  "author": {
+    "name": "Kaan Ozdokmeci",
+    "email": "kaan@2h2d.co",
+    "url": "https://www.2h2d.co"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/2h2d-co/vscode-node-test-explorer.git"
