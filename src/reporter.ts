@@ -24,7 +24,7 @@ function serializeError(_key: string, value: unknown): unknown {
     }
 
     if ("cause" in value) {
-      serialized.cause = value.cause;
+      serialized["cause"] = value.cause;
     }
 
     return serialized;
