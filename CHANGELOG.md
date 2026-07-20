@@ -2,6 +2,10 @@
 
 All notable changes to this extension are documented here.
 
+## Unreleased
+
+- Update transitive packaging dependencies to address known security vulnerabilities.
+
 ## 0.0.10 - 2026-07-20
 
 - Support Node.js 22.19 and newer for native TypeScript test execution.
