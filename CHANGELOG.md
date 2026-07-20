@@ -2,6 +2,10 @@
 
 All notable changes to this extension are documented here.
 
+## 0.0.13 - 2026-07-20
+
+- Publish the extension through the corrected Marketplace release workflow.
+
 ## 0.0.12 - 2026-07-20
 
 - Align GitHub and Marketplace prerelease classification with the derived release channel.
