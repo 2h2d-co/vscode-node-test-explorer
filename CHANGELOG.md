@@ -2,7 +2,7 @@
 
 All notable changes to this extension are documented here.
 
-## Unreleased
+## 0.0.11 - 2026-07-20
 
 - Update transitive packaging dependencies to address known security vulnerabilities.
 
