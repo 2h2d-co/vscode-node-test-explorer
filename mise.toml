@@ -8,8 +8,8 @@ hk = { version = "1.51.0", postinstall = "hk install --mise" }
 cocogitto = "7.0.0"
 actionlint = "1.7.12"
 zizmor = "1.26.1"
-node = "24"
-pnpm = "11"
+node = "22.23.1"
+pnpm = "11.13.1"
 
 [env]
-_.path = ["./node_modules/.bin"]
+_.path = ["{{config_root}}/node_modules/.bin"]

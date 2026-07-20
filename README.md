@@ -13,7 +13,7 @@ VS Code Test Explorer integration for modern `node:test` projects.
 ## Requirements
 
 - VS Code 1.100 or newer.
-- Node 24 available to the extension for test execution.
+- Node 22.19 or newer available to the extension for test execution.
 - ESM test files.
 - A local, non-virtual workspace.
 - A trusted workspace for running tests.
@@ -43,7 +43,7 @@ Virtual workspaces are not supported because discovery and execution require loc
 
 Test execution uses the `vscode-node-test-explorer.nodePath` setting and defaults to `node` from `PATH`.
 
-If VS Code cannot resolve Node 24 from `PATH`, set an absolute path:
+If VS Code cannot resolve Node 22.19 or newer from `PATH`, set an absolute path:
 
 ```json
 {
@@ -61,6 +61,7 @@ Use the local `mise.toml`:
 mise trust
 mise install
 pnpm install
+pnpm check
 pnpm compile
 pnpm package
 pnpm package:pre-release

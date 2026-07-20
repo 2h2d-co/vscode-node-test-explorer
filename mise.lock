@@ -61,41 +61,41 @@ url = "https://github.com/jdx/hk/releases/download/v1.51.0/hk-aarch64-apple-darw
 url_api = "https://api.github.com/repos/jdx/hk/releases/assets/476588079"
 
 [[tools.node]]
-version = "24.18.0"
+version = "22.23.1"
 backend = "core:node"
 
 [tools.node."platforms.linux-arm64"]
-checksum = "sha256:6b4484c2190274175df9aa8f28e2d758a819cb1c1fe6ab481e2f95b463ab8508"
-url = "https://nodejs.org/dist/v24.18.0/node-v24.18.0-linux-arm64.tar.gz"
+checksum = "sha256:543fa39e57d4c07855939459a323f4deb9a79dd1bb45e6e99458b0f2de10db8d"
+url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-linux-arm64.tar.gz"
 
 [tools.node."platforms.linux-x64"]
-checksum = "sha256:783130984963db7ba9cbd01089eaf2c2efb055c7c1693c943174b967b3050cb8"
-url = "https://nodejs.org/dist/v24.18.0/node-v24.18.0-linux-x64.tar.gz"
+checksum = "sha256:7a8cb04b4a1df4eaf432125324b81b29a088e73570a23259a8de1c65d07fc129"
+url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-linux-x64.tar.gz"
 
 [tools.node."platforms.macos-arm64"]
-checksum = "sha256:e1a97e14c99c803e96c7339403282ea05a499c32f8d83defe9ef5ec66f979ed1"
-url = "https://nodejs.org/dist/v24.18.0/node-v24.18.0-darwin-arm64.tar.gz"
+checksum = "sha256:ef28d8fab2c0e4314522d4bb1b7173270aa3937e93b92cb7de79c112ac1fa953"
+url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-darwin-arm64.tar.gz"
 
 [[tools.pnpm]]
-version = "11.10.0"
+version = "11.13.1"
 backend = "aqua:pnpm/pnpm"
 
 [tools.pnpm."platforms.linux-arm64"]
-checksum = "sha256:7da014033800db506095d8d5eb15c4b1df7aa9cc6a4992634e4d59c3985e720b"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.10.0/pnpm-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/466571515"
+checksum = "sha256:b52db99d215ed7dc9563aed815953c62a6c1ffd7cd75803d3a07ad7e4f246aed"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.13.1/pnpm-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/478563983"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64"]
-checksum = "sha256:cf22c9f1ba90f67c9a5cfb1cbe9c2087cf4c3a5c409dad738c1f8a38b8137666"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.10.0/pnpm-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/466571518"
+checksum = "sha256:bd6d4b0e14536207ad76bc838f5980cecd968da15f69aae0b207380cca3f2e98"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.13.1/pnpm-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/478563986"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.macos-arm64"]
-checksum = "sha256:d0d8a55b47dbe07a80d13fec7ee5af9bdca36187e61f9562d72d81dd637178c4"
-url = "https://github.com/pnpm/pnpm/releases/download/v11.10.0/pnpm-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/466571520"
+checksum = "sha256:765c2bf04e8129cb58c0f946e324262e418370b35a203b50b1f06a0567ef8bc1"
+url = "https://github.com/pnpm/pnpm/releases/download/v11.13.1/pnpm-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/478563984"
 provenance = "github-attestations"
 
 [[tools.zizmor]]

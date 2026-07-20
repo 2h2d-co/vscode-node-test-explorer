@@ -363,7 +363,7 @@ export function activate(context: vscode.ExtensionContext): void {
         await saveDirtyTestDocuments(request.include);
         const requestedIds = request.include?.map((item) => item.id);
         await discoverWorkspace();
-        const nodePath = await ensureNode24(token);
+        const nodePath = await ensureSupportedNode(token);
 
         const excluded = new Set(request.exclude?.map((item) => item.id) ?? []);
         const selected: vscode.TestItem[] = [];
@@ -698,7 +698,7 @@ function erroredTree(
   item.children.forEach((child) => erroredTree(child, excluded, run, message));
 }
 
-async function ensureNode24(token: vscode.CancellationToken): Promise<string> {
+async function ensureSupportedNode(token: vscode.CancellationToken): Promise<string> {
   const nodePath = nodeExecutable();
   const version = await new Promise<string>((resolve, reject) => {
     const child = spawn(nodePath, ["--version"]);
@@ -725,8 +725,15 @@ async function ensureNode24(token: vscode.CancellationToken): Promise<string> {
     }
   });
 
-  if (!version.startsWith("v24.")) {
-    throw new Error(`Node 24 is required for test execution; ${nodePath} resolved ${version}.`);
+  const match = /^v(\d+)\.(\d+)\.(\d+)/.exec(version);
+  const major = Number(match?.[1]);
+  const minor = Number(match?.[2]);
+  const isSupported = major > 22 || (major === 22 && minor >= 19);
+
+  if (!isSupported) {
+    throw new Error(
+      `Node 22.19 or newer is required for test execution; ${nodePath} resolved ${version}.`,
+    );
   }
 
   return nodePath;

@@ -2,6 +2,10 @@
 
 All notable changes to this extension are documented here.
 
+## Unreleased
+
+- Support Node.js 22.19 and newer for native TypeScript test execution.
+
 ## 0.0.9 - 2026-05-20
 
 - Declared limited Restricted Mode support: static test discovery remains available, but running tests is blocked until the workspace is trusted.

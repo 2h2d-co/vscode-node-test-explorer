@@ -1,3 +1,9 @@
 allowBuilds:
   "@vscode/vsce-sign": false
   keytar: false
+
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  - semver@5.7.2
+  - undici-types@6.21.0
