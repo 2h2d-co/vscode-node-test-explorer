@@ -30,7 +30,8 @@ jobs:
           version: "2026.6.14"
           install_args: --locked
           cache: false
-      - name: Validate release
+      - name: Validate release and derive npm dist-tag
+        id: release
         run: node ./scripts/ci-publish-checks.ts
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -39,16 +40,23 @@ jobs:
       - name: Package VSIX artifacts
         run: pnpm package:all
       - name: Create GitHub release
-        run: gh release create "${GITHUB_REF_NAME}" artifacts/vsix/*.vsix --generate-notes --verify-tag
+        run: |
+          args=(release create "${GITHUB_REF_NAME}" artifacts/vsix/*.vsix --generate-notes --verify-tag)
+          if [[ $NPM_DIST_TAG != latest ]]; then
+            args+=(--prerelease)
+          fi
+          gh "${args[@]}"
         env:
           GH_TOKEN: ${{ github.token }}
+          NPM_DIST_TAG: "${{ steps.release.outputs.npm_tag }}"
       - name: Publish to VS Code Marketplace
         run: |
           args=(publish --skip-duplicate)
-          if [[ $(node -p 'require("./package.json").version.includes("-")') == true ]]; then
+          if [[ $NPM_DIST_TAG != latest ]]; then
             args+=(--pre-release)
           fi
           args+=(--packagePath artifacts/vsix/*.vsix)
           pnpm exec vsce "${args[@]}"
         env:
+          NPM_DIST_TAG: "${{ steps.release.outputs.npm_tag }}"
           VSCE_PAT: ${{ secrets.VSCE_PAT }}

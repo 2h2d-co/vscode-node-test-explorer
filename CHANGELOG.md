@@ -2,6 +2,10 @@
 
 All notable changes to this extension are documented here.
 
+## Unreleased
+
+- Align GitHub and Marketplace prerelease classification with the derived release channel.
+
 ## 0.0.11 - 2026-07-20
 
 - Update transitive packaging dependencies to address known security vulnerabilities.
