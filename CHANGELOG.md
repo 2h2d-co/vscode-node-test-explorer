@@ -2,6 +2,10 @@
 
 All notable changes to this extension are documented here.
 
+## 0.0.14 - 2026-08-01
+
+- Update the ast-grep runtime used for test discovery.
+
 ## 0.0.13 - 2026-07-20
 
 - Publish the extension through the corrected Marketplace release workflow.
