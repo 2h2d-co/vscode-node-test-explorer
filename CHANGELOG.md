@@ -4,8 +4,14 @@ All notable changes to this extension are documented here.
 
 ## Unreleased
 
+### Changed
+
+- Raise the minimum supported VS Code version from 1.100 to 1.125.
+- Update the ast-grep runtime used for test discovery.
+
 ### Security
 
+- Update transitive VSIX packaging dependencies to address known vulnerabilities.
 - Bind every target-specific VSIX digest to an SSH-signed release commit and reproduce the complete
   release manifest locally and in CI.
 - Separate read-only extension construction, GitHub release publication, and Marketplace
