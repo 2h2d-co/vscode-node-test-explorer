@@ -9,6 +9,10 @@ All notable changes to this extension are documented here.
 - Raise the minimum supported VS Code version from 1.100 to 1.125.
 - Update the ast-grep runtime used for test discovery.
 
+### Fixed
+
+- Keep Marketplace publishing aligned with the project-pinned pnpm client.
+
 ### Security
 
 - Update transitive VSIX packaging dependencies to address known vulnerabilities.

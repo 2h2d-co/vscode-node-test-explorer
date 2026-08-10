@@ -341,7 +341,7 @@ jobs:
           test "$(node --version)" = v22.23.1
           test "$(npm --version)" = 11.19.0
           corepack enable pnpm
-          test "$(corepack pnpm --version)" = 11.13.1
+          test "$(corepack pnpm --version)" = 11.20.0
           corepack pnpm install --frozen-lockfile --ignore-scripts
           test "$(corepack pnpm exec vsce --version)" = 3.9.2
 
