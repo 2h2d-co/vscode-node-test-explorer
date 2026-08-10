@@ -1,7 +1,7 @@
 {
   "name": "vscode-node-test-explorer",
   "displayName": "Modern node:test Explorer",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "private": true,
   "description": "VS Code test integration for modern ESM node:test projects.",
   "categories": [
