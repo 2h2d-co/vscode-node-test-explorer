@@ -358,5 +358,10 @@ jobs:
           if [[ $PRERELEASE == true ]]; then
             args+=(--pre-release)
           fi
-          args+=(--packagePath "$GITHUB_WORKSPACE"/release-artifacts/*.vsix)
+          vsix_files=("$GITHUB_WORKSPACE"/release-artifacts/*.vsix)
+          if (( ${#vsix_files[@]} != 8 )); then
+            echo "expected 8 verified VSIX files, found ${#vsix_files[@]}" >&2
+            exit 1
+          fi
+          args+=(--packagePath "${vsix_files[@]}")
           corepack pnpm exec vsce "${args[@]}"
