@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,6 +30,7 @@ const releaseTag = `v${releaseVersion}`;
 await createRelease();
 
 async function createRelease(): Promise<void> {
+  const npmPath = await requireLockedToolchain();
   requireCleanMain();
   git(["fetch", "--quiet", "--tags", "origin", "main"]);
 
@@ -56,7 +57,7 @@ async function createRelease(): Promise<void> {
   assertStagedReleaseFiles(parsedVersion.prerelease);
 
   const sourceDateEpoch = gitOutput(["show", "-s", "--format=%ct", "HEAD"]);
-  const localDigest = await buildReleaseFromIndex(sourceDateEpoch);
+  const localDigest = await buildReleaseFromIndex(sourceDateEpoch, npmPath);
   git([
     "commit",
     "-S",
@@ -72,7 +73,7 @@ async function createRelease(): Promise<void> {
   if (committedSourceDateEpoch !== sourceDateEpoch) {
     throw new Error("Release source date changed while creating the release commit.");
   }
-  const committedDigest = await buildReleaseFromIndex(committedSourceDateEpoch);
+  const committedDigest = await buildReleaseFromIndex(committedSourceDateEpoch, npmPath);
   if (committedDigest !== localDigest) {
     throw new Error(
       `VSIX release is not reproducible: ${localDigest} does not match ${committedDigest}.`,
@@ -91,6 +92,26 @@ async function createRelease(): Promise<void> {
   console.log(`Created lightweight tag ${releaseTag}.`);
   console.log(`Locally attested release manifest SHA-256: ${localDigest}`);
   console.log(`Push with: git push --atomic origin main ${releaseTag}`);
+}
+
+async function requireLockedToolchain(): Promise<string> {
+  const expectedNode = await realpath(runOutput("mise", ["which", "node"], root));
+  const actualNode = await realpath(process.execPath);
+  if (actualNode !== expectedNode) {
+    throw new Error(
+      `Release Node.js ${actualNode} does not match locked tool ${expectedNode}; run mise install --locked and restart the command.`,
+    );
+  }
+
+  const expectedPnpm = await realpath(runOutput("mise", ["which", "pnpm"], root));
+  const actualPnpm = await realpath(pnpmExecPath);
+  if (actualPnpm !== expectedPnpm) {
+    throw new Error(
+      `Release pnpm ${actualPnpm} does not match locked tool ${expectedPnpm}; run mise install --locked and restart the command.`,
+    );
+  }
+
+  return realpath(runOutput("mise", ["which", "npm"], root));
 }
 
 function requireCleanMain(): void {
@@ -145,7 +166,7 @@ function assertStagedReleaseFiles(prerelease: boolean): void {
   }
 }
 
-async function buildReleaseFromIndex(sourceDateEpoch: string): Promise<string> {
+async function buildReleaseFromIndex(sourceDateEpoch: string, npmPath: string): Promise<string> {
   const temporaryRoot = await mkdtemp(join(tmpdir(), "vscode-node-tests-release-"));
   const source = join(temporaryRoot, "source");
   const output = join(temporaryRoot, "vsix");
@@ -166,7 +187,9 @@ async function buildReleaseFromIndex(sourceDateEpoch: string): Promise<string> {
       {
         ...process.env,
         PATH: executablePath,
+        RELEASE_NPM_PATH: npmPath,
         SOURCE_DATE_EPOCH: sourceDateEpoch,
+        TZ: "UTC",
       },
     );
     const manifest = await readFile(join(output, "release-manifest.sha256"));
@@ -239,12 +262,16 @@ function git(args: string[]): void {
 }
 
 function gitOutput(args: string[]): string {
-  const result = spawnSync("git", args, { cwd: root, encoding: "utf8" });
+  return runOutput("git", args, root);
+}
+
+function runOutput(command: string, args: string[], cwd: string): string {
+  const result = spawnSync(command, args, { cwd, encoding: "utf8" });
   if (result.error) {
     throw result.error;
   }
   if (result.status !== 0) {
-    throw new Error(`git ${args.join(" ")} exited with ${result.status ?? "no status"}.`);
+    throw new Error(`${command} ${args.join(" ")} exited with ${result.status ?? "no status"}.`);
   }
   return result.stdout.trim();
 }

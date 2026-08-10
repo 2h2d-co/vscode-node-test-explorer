@@ -12,6 +12,9 @@ All notable changes to this extension are documented here.
 ### Fixed
 
 - Keep Marketplace publishing aligned with the project-pinned pnpm client.
+- Apply the configured dependency release-age policy during target-specific npm installation.
+- Reject local releases when Node.js or pnpm differs from the locked toolchain used by CI.
+- Normalize VSIX archive timestamps to UTC for reproducible macOS and Linux builds.
 
 ### Security
 

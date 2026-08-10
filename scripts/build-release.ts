@@ -15,6 +15,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const releaseVersion = process.argv[2];
 const outputArgument = process.argv[3];
 
+process.env["TZ"] = "UTC";
+
 if (!releaseVersion || !outputArgument || process.argv.length !== 4) {
   throw new Error("Usage: node scripts/build-release.ts RELEASE_VERSION OUTPUT_DIRECTORY");
 }

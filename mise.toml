@@ -10,6 +10,7 @@ cocogitto = "latest"
 actionlint = "latest"
 zizmor = "latest"
 node = "22"
+npm = "11"
 pnpm = "11"
 
 [env]

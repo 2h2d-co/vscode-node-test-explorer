@@ -1,5 +1,5 @@
-import { spawn } from "node:child_process";
-import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { spawn, spawnSync } from "node:child_process";
+import { access, cp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join } from "node:path";
 
 import { currentVsixTarget, vsixTargetByName, vsixTargets } from "./vsix-targets.ts";
@@ -46,6 +46,8 @@ if (!isExtensionPackage(parsedPackage)) {
 
 const rootPackage = parsedPackage;
 const astGrepVersion = rootPackage.dependencies?.["@ast-grep/napi"];
+const minimumReleaseAgeDays = await readMinimumReleaseAgeDays();
+const npmPath = await resolveNpmPath();
 
 if (!astGrepVersion) {
   throw new Error("package.json must declare @ast-grep/napi as a runtime dependency.");
@@ -125,13 +127,14 @@ async function packageTarget(
     "--no-audit",
     "--no-fund",
     "--package-lock=false",
+    `--min-release-age=${minimumReleaseAgeDays}`,
     `--os=${target.npmOs}`,
     `--cpu=${target.npmCpu}`,
   ];
   if (target.npmLibc) {
     npmInstallArgs.push(`--libc=${target.npmLibc}`);
   }
-  await run("npm", npmInstallArgs, staging);
+  await run(npmPath, npmInstallArgs, staging);
   await access(join(staging, "node_modules", "@ast-grep", target.astGrepPackage));
 
   await mkdir(outputDir, { recursive: true });
@@ -215,6 +218,44 @@ function isExtensionPackage(value: unknown): value is ExtensionPackage {
     "version" in value &&
     typeof value.version === "string"
   );
+}
+
+async function readMinimumReleaseAgeDays(): Promise<number> {
+  const workspace = await readFile(join(root, "pnpm-workspace.yaml"), "utf8");
+  const minutesText = /^minimumReleaseAge:\s*([0-9]+)\s*$/m.exec(workspace)?.[1];
+  const minutes = Number(minutesText);
+  if (!Number.isSafeInteger(minutes) || minutes <= 0 || minutes % (24 * 60) !== 0) {
+    throw new Error("pnpm-workspace.yaml minimumReleaseAge must be a positive whole day.");
+  }
+  return minutes / (24 * 60);
+}
+
+async function resolveNpmPath(): Promise<string> {
+  const configuredPath = process.env["RELEASE_NPM_PATH"];
+  const candidate = configuredPath ?? runOutput("mise", ["which", "npm"], root);
+  if (!isAbsolute(candidate)) {
+    throw new Error(`npm path must be absolute: ${candidate}`);
+  }
+  const resolvedPath = await realpath(candidate);
+  const version = runOutput(resolvedPath, ["--version"], root);
+  const major = Number(version.split(".", 1)[0]);
+  if (!Number.isSafeInteger(major) || major < 11) {
+    throw new Error(
+      `npm 11 or newer is required for minimum release-age enforcement; got ${version}.`,
+    );
+  }
+  return resolvedPath;
+}
+
+function runOutput(command: string, args: string[], cwd: string): string {
+  const result = spawnSync(command, args, { cwd, encoding: "utf8" });
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    throw new Error(`${command} ${args.join(" ")} exited with ${result.status ?? "no status"}.`);
+  }
+  return result.stdout.trim();
 }
 
 function run(command: string, args: string[], cwd: string): Promise<void> {
