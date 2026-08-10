@@ -17,6 +17,7 @@ All notable changes to this extension are documented here.
 - Normalize VSIX archive timestamps to UTC for reproducible macOS and Linux builds.
 - Expand verified VSIX paths before passing them to the Marketplace client.
 - Isolate the publishing-client checkout so it cannot clean downloaded VSIX artifacts.
+- Select the pinned pnpm version explicitly from the isolated publishing-client checkout.
 
 ### Security
 
