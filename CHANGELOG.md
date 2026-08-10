@@ -2,6 +2,15 @@
 
 All notable changes to this extension are documented here.
 
+## Unreleased
+
+### Security
+
+- Bind every target-specific VSIX digest to an SSH-signed release commit and reproduce the complete
+  release manifest locally and in CI.
+- Separate read-only extension construction, GitHub release publication, and Marketplace
+  publication so no job holds both GitHub write access and the Marketplace token.
+
 ## 0.0.14 - 2026-08-01
 
 - Update the ast-grep runtime used for test discovery.

@@ -74,4 +74,21 @@ Generated VSIX files are written under `artifacts/vsix/`.
 
 ## Releasing
 
-Update `package.json` and `CHANGELOG.md`, create the matching lightweight tag with `git tag v<version>`, push it, and let the release workflow validate, package, publish to the VS Code Marketplace, and create the GitHub release. Do not use `git tag -a`, `git tag -s`, `git tag -m`, or `cog bump --annotated`. Prerelease versions are published with the Marketplace prerelease flag.
+Create a release from clean, synchronized `main`:
+
+```sh
+pnpm release -- X.Y.Z
+pnpm release -- X.Y.Z-alpha.0
+git push --atomic origin main vX.Y.Z
+```
+
+The release command builds all target-specific VSIX files reproducibly, signs their canonical
+manifest digest in the release commit, rebuilds the committed tree, and creates a lightweight tag.
+Stable releases move `Unreleased` changelog entries into a dated section; prereleases leave them
+under `Unreleased`.
+
+The tag workflow independently reproduces the signed manifest in a read-only job. Separate
+credentialed jobs receive the exact transferred VSIX files: one attests them and creates the GitHub
+release, while the other has only the Marketplace token and publishes through the locked VSCE
+client. Prerelease tags package and publish the numeric extension version with the Marketplace
+prerelease flag.

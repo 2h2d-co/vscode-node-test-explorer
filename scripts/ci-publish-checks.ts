@@ -12,22 +12,29 @@ const parsedPackage: unknown = JSON.parse(readFileSync(packageJsonPath, "utf8"))
 if (!isPackageJson(parsedPackage)) {
   throw new Error(`Missing or invalid package name/version in ${packageJsonPath}`);
 }
-const packageName = parsedPackage.name;
-const version = parsedPackage.version;
-
 if (process.argv.length > 2) {
   throw new Error("ci-publish-checks.ts does not accept arguments.");
 }
 
-assertCiReleaseGitState(version);
-const npmTag = deriveNpmTag(version);
-writeGithubOutput("npm_tag", npmTag);
+const release = assertCiReleaseGitState(parsedPackage.version);
+writeGithubOutput("expected_digest", release.expectedDigest);
+writeGithubOutput("extension_version", release.extensionVersion);
+writeGithubOutput("prerelease", String(release.prerelease));
+writeGithubOutput("release_version", release.releaseVersion);
+writeGithubOutput("source_date_epoch", release.sourceDateEpoch);
 
-console.log(`Validated CI release for ${packageName}@${version} with npm dist-tag "${npmTag}".`);
+console.log(
+  `Validated CI release for ${parsedPackage.name}@${release.releaseVersion} ` +
+    `(extension version ${release.extensionVersion}, prerelease ${release.prerelease}).`,
+);
 
-function assertCiReleaseGitState(releaseVersion: string): void {
-  const releaseTag = `v${releaseVersion}`;
-  const releaseTagRef = `refs/tags/${releaseTag}`;
+function assertCiReleaseGitState(extensionVersion: string): {
+  expectedDigest: string;
+  extensionVersion: string;
+  prerelease: boolean;
+  releaseVersion: string;
+  sourceDateEpoch: string;
+} {
   const eventName = getRequiredEnv("GITHUB_EVENT_NAME");
   const ref = getRequiredEnv("GITHUB_REF");
   const sha = getRequiredEnv("GITHUB_SHA");
@@ -38,99 +45,96 @@ function assertCiReleaseGitState(releaseVersion: string): void {
   if (eventName !== "push") {
     throw new Error(`Refusing release for event "${eventName}".`);
   }
-  if (ref !== releaseTagRef) {
+  const tagMatch =
+    /^refs\/tags\/v((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/.exec(
+      ref,
+    );
+  const tagExtensionVersion = tagMatch?.[1];
+  if (!tagExtensionVersion) {
+    throw new Error(`Refusing release from invalid tag ref "${ref}".`);
+  }
+  if (tagExtensionVersion !== extensionVersion) {
     throw new Error(
-      `Refusing release from ref "${ref}"; expected "${releaseTagRef}" for package version "${releaseVersion}".`,
+      `Release tag version ${tagExtensionVersion} does not match extension version ${extensionVersion}.`,
     );
   }
 
-  const insideWorkTree = runGit(["rev-parse", "--is-inside-work-tree"]);
-  if (insideWorkTree !== "true") {
-    throw new Error("Refusing release outside of a Git work tree.");
-  }
-
+  const releaseTag = ref.slice("refs/tags/".length);
+  const releaseTagRef = `refs/tags/${releaseTag}`;
   if (!gitSucceeds(["rev-parse", "--verify", "--quiet", `${releaseTagRef}^{commit}`])) {
     throw new Error(`Refusing release because tag "${releaseTag}" does not exist.`);
   }
-
-  const tagObjectType = runGit(["cat-file", "-t", releaseTagRef]);
-  if (tagObjectType !== "commit") {
-    throw new Error(`Refusing release because tag "${releaseTag}" is not a lightweight tag.`);
+  if (runGit(["cat-file", "-t", releaseTagRef]) !== "commit") {
+    throw new Error(`Refusing release because tag "${releaseTag}" is not lightweight.`);
   }
 
   const tagCommit = runGit(["rev-parse", `${releaseTagRef}^{commit}`]);
-  const head = runGit(["rev-parse", "HEAD"]);
-  if (tagCommit !== head) {
+  if (runGit(["rev-parse", "HEAD"]) !== tagCommit) {
     throw new Error(`Refusing release because tag "${releaseTag}" does not point at HEAD.`);
   }
-
-  const eventCommit = runGit(["rev-parse", `${sha}^{commit}`]);
-  if (eventCommit !== tagCommit) {
+  if (runGit(["rev-parse", `${sha}^{commit}`]) !== tagCommit) {
     throw new Error(`Refusing release because GITHUB_SHA does not match tag "${releaseTag}".`);
   }
-
-  const subject = runGit(["log", "-1", "--pretty=%s", tagCommit]);
-  const expectedSubject = `release: ${releaseTag}`;
-  if (subject !== expectedSubject) {
-    throw new Error(
-      `Refusing release because tag "${releaseTag}" points to commit with subject "${subject}", not "${expectedSubject}".`,
-    );
-  }
-
   if (!gitSucceeds(["merge-base", "--is-ancestor", tagCommit, "origin/main"])) {
     throw new Error(
       `Refusing release because tag "${releaseTag}" does not point to a commit on origin/main.`,
     );
   }
-}
 
-function deriveNpmTag(releaseVersion: string): string {
-  const prerelease = releaseVersion.match(/-([0-9A-Za-z.-]+)$/)?.[1];
-  if (!prerelease) {
-    return "latest";
-  }
-
-  const firstIdentifier = prerelease.split(".")[0]?.toLowerCase();
-  if (!firstIdentifier) {
-    throw new Error(`Could not derive npm dist-tag from version "${releaseVersion}"`);
-  }
-
-  if (/^\d+$/.test(firstIdentifier)) {
+  const subject = runGit(["log", "-1", "--pretty=%s", tagCommit]);
+  if (subject !== `release: ${releaseTag}`) {
     throw new Error(
-      `Version "${releaseVersion}" has a numeric prerelease identifier. Use a named prerelease like alpha, beta, rc, or publish manually.`,
+      `Refusing release because commit subject "${subject}" does not match release: ${releaseTag}.`,
     );
   }
-
-  if (!/^[a-z][a-z0-9-]*$/.test(firstIdentifier)) {
-    throw new Error(
-      `Derived npm dist-tag "${firstIdentifier}" from version "${releaseVersion}" is invalid. Use a prerelease like alpha.0, beta.1, or rc.2.`,
-    );
+  runGit([
+    "-c",
+    "gpg.format=ssh",
+    "-c",
+    "gpg.ssh.allowedSignersFile=.github/release-signers",
+    "verify-commit",
+    tagCommit,
+  ]);
+  const expectedDigest = runGit([
+    "log",
+    "-1",
+    "--format=%(trailers:key=Release-Manifest-SHA256,valueonly)",
+    tagCommit,
+  ]);
+  if (!/^[0-9a-f]{64}$/.test(expectedDigest)) {
+    throw new Error("Release commit is missing a valid Release-Manifest-SHA256 trailer.");
   }
 
-  if (firstIdentifier === "latest") {
-    throw new Error(
-      `Refusing prerelease version "${releaseVersion}" because it derives the reserved "latest" npm dist-tag.`,
-    );
+  const sourceDateEpoch = runGit(["show", "-s", "--format=%ct", `${tagCommit}^`]);
+  if (!/^[0-9]+$/.test(sourceDateEpoch)) {
+    throw new Error("Could not derive SOURCE_DATE_EPOCH from the release commit parent.");
   }
 
-  return firstIdentifier;
+  return {
+    expectedDigest,
+    extensionVersion,
+    prerelease: tagMatch[2] !== undefined,
+    releaseVersion: releaseTag.slice(1),
+    sourceDateEpoch,
+  };
 }
 
 function isPackageJson(value: unknown): value is PackageJson {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return false;
-  }
-
-  if (!("version" in value) || typeof value.version !== "string" || value.version.length === 0) {
-    return false;
-  }
-
-  return "name" in value && typeof value.name === "string" && value.name.length > 0;
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    "name" in value &&
+    typeof value.name === "string" &&
+    value.name.length > 0 &&
+    "version" in value &&
+    typeof value.version === "string" &&
+    value.version.length > 0
+  );
 }
 
 function writeGithubOutput(name: string, value: string): void {
-  const outputPath = getRequiredEnv("GITHUB_OUTPUT");
-  appendFileSync(outputPath, `${name}=${value}\n`);
+  appendFileSync(getRequiredEnv("GITHUB_OUTPUT"), `${name}=${value}\n`);
 }
 
 function getRequiredEnv(name: string): string {
@@ -142,11 +146,7 @@ function getRequiredEnv(name: string): string {
 }
 
 function runGit(args: string[]): string {
-  const result = spawnSync("git", args, {
-    encoding: "utf8",
-    shell: false,
-  });
-
+  const result = spawnSync("git", args, { encoding: "utf8", shell: false });
   if (result.error) {
     throw result.error;
   }
@@ -158,10 +158,7 @@ function runGit(args: string[]): string {
 }
 
 function gitSucceeds(args: string[]): boolean {
-  const result = spawnSync("git", args, {
-    stdio: "ignore",
-    shell: false,
-  });
+  const result = spawnSync("git", args, { stdio: "ignore" });
   if (result.error) {
     throw result.error;
   }

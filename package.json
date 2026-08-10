@@ -35,10 +35,12 @@
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "check": "hk check --all --check",
+    "build:release": "node scripts/build-release.ts",
     "package": "pnpm compile && node scripts/package-vsix.ts",
     "package:all": "pnpm compile && node scripts/package-vsix.ts --all-targets",
     "package:pre-release": "pnpm compile && node scripts/package-vsix.ts --pre-release",
-    "package:pre-release:all": "pnpm compile && node scripts/package-vsix.ts --all-targets --pre-release"
+    "package:pre-release:all": "pnpm compile && node scripts/package-vsix.ts --all-targets --pre-release",
+    "release": "node scripts/release.ts"
   },
   "dependencies": {
     "@ast-grep/napi": "0.45.0"
