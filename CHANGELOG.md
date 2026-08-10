@@ -16,6 +16,7 @@ All notable changes to this extension are documented here.
 - Reject local releases when Node.js or pnpm differs from the locked toolchain used by CI.
 - Normalize VSIX archive timestamps to UTC for reproducible macOS and Linux builds.
 - Expand verified VSIX paths before passing them to the Marketplace client.
+- Isolate the publishing-client checkout so it cannot clean downloaded VSIX artifacts.
 
 ### Security
 

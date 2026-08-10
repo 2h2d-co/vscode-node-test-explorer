@@ -327,6 +327,7 @@ jobs:
       - name: Check out publishing client lockfile
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          path: publishing-client
           persist-credentials: false
           ref: ${{ github.sha }}
 
@@ -344,8 +345,8 @@ jobs:
           test "$(npm --version)" = 10.9.8
           corepack enable pnpm
           test "$(corepack pnpm --version)" = 11.20.0
-          corepack pnpm install --frozen-lockfile --ignore-scripts
-          test "$(corepack pnpm exec vsce --version)" = 3.9.2
+          corepack pnpm --dir publishing-client install --frozen-lockfile --ignore-scripts
+          test "$(corepack pnpm --dir publishing-client exec vsce --version)" = 3.9.2
 
       - name: Publish verified VSIX artifacts
         shell: bash
@@ -364,4 +365,4 @@ jobs:
             exit 1
           fi
           args+=(--packagePath "${vsix_files[@]}")
-          corepack pnpm exec vsce "${args[@]}"
+          corepack pnpm --dir publishing-client exec vsce "${args[@]}"
