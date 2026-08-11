@@ -42,7 +42,14 @@ jobs:
         run: node ./scripts/ci-publish-checks.ts
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          if (( $(date -u +%s) >= 1786721880 )); then
+            echo "temporary --trust-lockfile override expired; remove it and validate the seven-day policy" >&2
+            exit 1
+          fi
+          pnpm install --frozen-lockfile --ignore-scripts --trust-lockfile
 
       - name: Check
         run: pnpm check

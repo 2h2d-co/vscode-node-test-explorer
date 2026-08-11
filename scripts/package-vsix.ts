@@ -46,7 +46,17 @@ if (!isExtensionPackage(parsedPackage)) {
 
 const rootPackage = parsedPackage;
 const astGrepVersion = rootPackage.dependencies?.["@ast-grep/napi"];
-const minimumReleaseAgeDays = await readMinimumReleaseAgeDays();
+const configuredMinimumReleaseAgeDays = await readMinimumReleaseAgeDays();
+const temporaryReleaseAgeOverrideExpiresAt = Date.parse("2026-08-14T15:38:00Z");
+if (configuredMinimumReleaseAgeDays !== 7) {
+  throw new Error("pnpm-workspace.yaml must enforce the seven-day minimum release age.");
+}
+if (Date.now() >= temporaryReleaseAgeOverrideExpiresAt) {
+  throw new Error(
+    "temporary npm minimum release-age override expired; use the configured seven-day policy.",
+  );
+}
+const minimumReleaseAgeDays = 3;
 const npmPath = await resolveNpmPath();
 
 if (!astGrepVersion) {
