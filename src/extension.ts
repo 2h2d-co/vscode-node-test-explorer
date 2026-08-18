@@ -150,6 +150,7 @@ export function activate(context: vscode.ExtensionContext): void {
         uri,
         Buffer.from(await vscode.workspace.fs.readFile(uri)).toString("utf8"),
       );
+      // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- Discovery failures are displayed on the corresponding test item.
     } catch (error) {
       const fileItem = controller.items.get(uri.toString());
       if (fileItem) {
@@ -168,6 +169,7 @@ export function activate(context: vscode.ExtensionContext): void {
     let root: SgNode;
     try {
       root = (await parseAsync(language, source)).root();
+      // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- Parse failures are displayed on the corresponding test item.
     } catch (error) {
       let fileItem = controller.items.get(uri.toString());
       if (!fileItem) {
@@ -180,7 +182,11 @@ export function activate(context: vscode.ExtensionContext): void {
       return;
     }
 
-    const canonicalFilePath = await realpath(uri.fsPath).catch(() => uri.fsPath);
+    // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- The unresolved path remains a stable location key when canonicalization fails.
+    const canonicalFilePath = await realpath(uri.fsPath).catch((error: unknown) => {
+      void error;
+      return uri.fsPath;
+    });
     const directImports = new Map<string, TestKind>();
     const namespaceImports = new Set<string>();
 
@@ -304,10 +310,11 @@ export function activate(context: vscode.ExtensionContext): void {
     const suiteStack: DiscoveredTest[] = [];
 
     for (const test of discovered) {
-      while (
-        suiteStack.length > 0 &&
-        suiteStack[suiteStack.length - 1]!.endIndex <= test.startIndex
-      ) {
+      while (true) {
+        const currentSuite = suiteStack.at(-1);
+        if (currentSuite === undefined || currentSuite.endIndex > test.startIndex) {
+          break;
+        }
         suiteStack.pop();
       }
 
@@ -442,6 +449,7 @@ export function activate(context: vscode.ExtensionContext): void {
           // oxlint-disable-next-line no-await-in-loop -- one test process at a time keeps output ordering stable.
           await runNodeTestFile(context, plan, token, run, locationToItem, nodePath);
         }
+        // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- Run failures are rendered in the VS Code test output before the run ends.
       } catch (error) {
         run.appendOutput(`${error instanceof Error ? error.message : String(error)}\r\n`);
       } finally {
@@ -881,7 +889,10 @@ function handleNodeTestReporterLine(
       return;
     }
     event = parsed;
-  } catch {
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) {
+      throw error;
+    }
     run.appendOutput(`${line}\r\n`);
     return;
   }
@@ -977,7 +988,10 @@ function itemForNodeTestEvent(
   let filePath = vscode.Uri.file(data.file).fsPath;
   try {
     filePath = realpathSync.native(data.file);
-  } catch {
+  } catch (error) {
+    if (!(error instanceof Error)) {
+      throw error;
+    }
     filePath = vscode.Uri.file(data.file).fsPath;
   }
 
@@ -1114,7 +1128,10 @@ function jsonSummary(value: FailureProperties): string | undefined {
   try {
     const summary = JSON.stringify(value);
     return summary && summary !== "{}" ? summary : undefined;
-  } catch {
+  } catch (error) {
+    if (!(error instanceof TypeError)) {
+      throw error;
+    }
     return undefined;
   }
 }
