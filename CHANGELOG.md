@@ -12,6 +12,7 @@ All notable changes to this extension are documented here.
 
 ### Fixed
 
+- Report asynchronous test-discovery failures instead of leaving rejected discovery promises unobserved.
 - Keep Marketplace publishing aligned with the project-pinned pnpm client.
 - Apply the configured dependency release-age policy during target-specific npm installation.
 - Reject local releases when Node.js or pnpm differs from the locked toolchain used by CI.

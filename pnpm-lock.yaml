@@ -13,8 +13,8 @@ importers:
         version: 0.45.1
     devDependencies:
       '@2h2d/oxlint-config':
-        specifier: 0.1.0-alpha.2
-        version: 0.1.0-alpha.2(oxlint@1.78.0(oxlint-tsgolint@7.0.2001))
+        specifier: 0.1.0-alpha.3
+        version: 0.1.0-alpha.3(oxlint@1.78.0(oxlint-tsgolint@7.0.2001))
       '@types/node':
         specifier: 22.20.1
         version: 22.20.1
@@ -39,8 +39,8 @@ importers:
 
 packages:
 
-  '@2h2d/oxlint-config@0.1.0-alpha.2':
-    resolution: {integrity: sha512-WvskvQMxy52GLkAlfJ5EYcAuCwA3ncy1YDKmh6MjWEIrj+hmhGA9fE43t7scS0ngH8GvlVBz6jQaXsuvI8eXUQ==}
+  '@2h2d/oxlint-config@0.1.0-alpha.3':
+    resolution: {integrity: sha512-ZlmsdAHUwgi+YlVz/LoTHMD4HBCyu7cub6k83YOge6LYKtowFVmzwoABtm4KWU+i8uw6a6hC2iCBhI/4FIEuhw==}
     engines: {node: '>=22.19.0'}
     peerDependencies:
       oxlint: 1.78.0
@@ -1616,7 +1616,7 @@ packages:
 
 snapshots:
 
-  '@2h2d/oxlint-config@0.1.0-alpha.2(oxlint@1.78.0(oxlint-tsgolint@7.0.2001))':
+  '@2h2d/oxlint-config@0.1.0-alpha.3(oxlint@1.78.0(oxlint-tsgolint@7.0.2001))':
     dependencies:
       '@oxlint/plugins': 1.78.0
       oxlint: 1.78.0(oxlint-tsgolint@7.0.2001)

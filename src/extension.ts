@@ -102,6 +102,13 @@ type NamedFunction = {
 const UNTRUSTED_WORKSPACE_RUN_MESSAGE =
   "Running node:test requires trusting this workspace because it executes workspace code.";
 
+function observeDiscovery(promise: Promise<void>): void {
+  // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- The extension event boundary reports unexpected discovery failures to its host log.
+  promise.catch((error: unknown) => {
+    console.error("Unexpected node:test discovery failure.", error);
+  });
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   const controller = vscode.tests.createTestController("vscode-node-test-explorer", "node:test");
   const itemData = new Map<string, TestData>();
@@ -183,10 +190,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- The unresolved path remains a stable location key when canonicalization fails.
-    const canonicalFilePath = await realpath(uri.fsPath).catch((error: unknown) => {
-      void error;
-      return uri.fsPath;
-    });
+    const canonicalFilePath = await realpath(uri.fsPath).catch(() => uri.fsPath);
     const directImports = new Map<string, TestKind>();
     const namespaceImports = new Set<string>();
 
@@ -469,7 +473,7 @@ export function activate(context: vscode.ExtensionContext): void {
       fileId,
       setTimeout(() => {
         discoveryTimers.delete(fileId);
-        void discoverUri(uri);
+        observeDiscovery(discoverUri(uri));
       }, 200),
     );
   }
@@ -515,7 +519,7 @@ export function activate(context: vscode.ExtensionContext): void {
       for (const workspaceFolder of event.removed) {
         unwatchWorkspaceFolder(workspaceFolder);
       }
-      void discoverWorkspace();
+      observeDiscovery(discoverWorkspace());
     }),
     vscode.workspace.onDidChangeTextDocument((event) => {
       if (event.document.uri.scheme === "file" && languageForUri(event.document.uri)) {
@@ -524,7 +528,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  void discoverWorkspace();
+  observeDiscovery(discoverWorkspace());
 }
 
 export function deactivate(): void {}
