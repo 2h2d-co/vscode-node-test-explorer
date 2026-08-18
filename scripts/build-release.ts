@@ -4,6 +4,8 @@ import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { isString, parseJsonObject } from "./lib/json.ts";
+import { parseReleaseVersion } from "./lib/release-version.ts";
 import { vsixTargets } from "./vsix-targets.ts";
 
 type PackageJson = {
@@ -58,8 +60,8 @@ run(process.execPath, packageArgs, root);
 
 const expectedFiles = vsixTargets
   .map((target) => `${manifest.name}-${parsedVersion.extensionVersion}-${target.name}.vsix`)
-  .sort();
-const actualFiles = (await readdir(output)).sort();
+  .toSorted();
+const actualFiles = (await readdir(output)).toSorted();
 if (JSON.stringify(actualFiles) !== JSON.stringify(expectedFiles)) {
   throw new Error(
     `Unexpected VSIX artifacts:\nexpected ${expectedFiles.join(", ")}\nactual ${actualFiles.join(", ")}`,
@@ -81,34 +83,14 @@ const manifestDigest = createHash("sha256").update(releaseManifest).digest("hex"
 console.log(`Release manifest: ${manifestPath}`);
 console.log(`Release manifest SHA-256: ${manifestDigest}`);
 
-function parseReleaseVersion(version: string): {
-  extensionVersion: string;
-  prerelease: boolean;
-} {
-  const match =
-    /^((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/.exec(
-      version,
-    );
-  const extensionVersion = match?.[1];
-  if (!extensionVersion) {
-    throw new Error(`Invalid release version: ${version}`);
-  }
-  return { extensionVersion, prerelease: match[2] !== undefined };
-}
-
 function parsePackageJson(contents: string): PackageJson {
-  const value: unknown = JSON.parse(contents);
-  if (
-    typeof value !== "object" ||
-    value === null ||
-    !("name" in value) ||
-    typeof value.name !== "string" ||
-    !("version" in value) ||
-    typeof value.version !== "string"
-  ) {
+  const value = parseJsonObject(contents, "package.json");
+  const name = value["name"];
+  const version = value["version"];
+  if (!isString(name) || !isString(version)) {
     throw new Error("package.json is missing a valid name or version.");
   }
-  return { name: value.name, version: value.version };
+  return { name, version };
 }
 
 function run(command: string, args: string[], cwd: string): void {

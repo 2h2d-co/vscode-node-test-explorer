@@ -6,6 +6,7 @@ All notable changes to this extension are documented here.
 
 ### Changed
 
+- Adopt the shared 2h2d Oxlint policy, including the blanket ban on non-const type assertions.
 - Raise the minimum supported VS Code version from 1.100 to 1.125.
 - Update the ast-grep runtime used for test discovery.
 

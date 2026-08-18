@@ -7,6 +7,14 @@ type PackageJson = {
   version: string;
 };
 
+type CiRelease = {
+  expectedDigest: string;
+  extensionVersion: string;
+  prerelease: boolean;
+  releaseVersion: string;
+  sourceDateEpoch: string;
+};
+
 const packageJsonPath = resolve(process.cwd(), "package.json");
 const parsedPackage: unknown = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 if (!isPackageJson(parsedPackage)) {
@@ -28,13 +36,7 @@ console.log(
     `(extension version ${release.extensionVersion}, prerelease ${release.prerelease}).`,
 );
 
-function assertCiReleaseGitState(extensionVersion: string): {
-  expectedDigest: string;
-  extensionVersion: string;
-  prerelease: boolean;
-  releaseVersion: string;
-  sourceDateEpoch: string;
-} {
+function assertCiReleaseGitState(extensionVersion: string): CiRelease {
   const eventName = getRequiredEnv("GITHUB_EVENT_NAME");
   const ref = getRequiredEnv("GITHUB_REF");
   const sha = getRequiredEnv("GITHUB_SHA");

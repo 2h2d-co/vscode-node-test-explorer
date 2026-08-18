@@ -5,7 +5,11 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-type PackageJson = Record<string, unknown> & {
+import { isString, parseJsonObject } from "./lib/json.ts";
+import type { JsonObject } from "./lib/json.ts";
+import { parseReleaseVersion } from "./lib/release-version.ts";
+
+type PackageJson = JsonObject & {
   name: string;
   version: string;
 };
@@ -159,7 +163,10 @@ async function updateStableChangelog(extensionVersion: string): Promise<void> {
 }
 
 function assertStagedReleaseFiles(prerelease: boolean): void {
-  const files = gitOutput(["diff", "--cached", "--name-only"]).split("\n").filter(Boolean).sort();
+  const files = gitOutput(["diff", "--cached", "--name-only"])
+    .split("\n")
+    .filter(Boolean)
+    .toSorted();
   const expected = prerelease ? ["package.json"] : ["CHANGELOG.md", "package.json"];
   if (JSON.stringify(files) !== JSON.stringify(expected)) {
     throw new Error(`Release metadata changed unexpected files: ${files.join(", ")}`);
@@ -223,38 +230,15 @@ function verifyReleaseCommit(commit: string, digest: string): void {
 }
 
 function parsePackageJson(contents: string): PackageJson {
-  const value: unknown = JSON.parse(contents);
+  const value = parseJsonObject(contents, "package.json");
   if (!isPackageJson(value)) {
     throw new Error("package.json is missing a valid name or version.");
   }
   return value;
 }
 
-function isPackageJson(value: unknown): value is PackageJson {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value) &&
-    "name" in value &&
-    typeof value.name === "string" &&
-    "version" in value &&
-    typeof value.version === "string"
-  );
-}
-
-function parseReleaseVersion(version: string): {
-  extensionVersion: string;
-  prerelease: boolean;
-} {
-  const match =
-    /^((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/.exec(
-      version,
-    );
-  const extensionVersion = match?.[1];
-  if (!extensionVersion) {
-    throw new Error(`Invalid release version: ${version}`);
-  }
-  return { extensionVersion, prerelease: match[2] !== undefined };
+function isPackageJson(value: JsonObject): value is PackageJson {
+  return isString(value["name"]) && isString(value["version"]);
 }
 
 function git(args: string[]): void {

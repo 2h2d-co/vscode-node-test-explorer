@@ -31,7 +31,7 @@
     "compile": "tsc -p .",
     "watch": "tsc -w -p .",
     "typecheck": "tsc --noEmit -p . && tsc -p scripts/tsconfig.json",
-    "lint": "oxlint src --type-aware --type-check && oxlint scripts",
+    "lint": "oxlint --deny-warnings",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "check": "hk check --all --check",
@@ -46,11 +46,12 @@
     "@ast-grep/napi": "0.45.1"
   },
   "devDependencies": {
+    "@2h2d/oxlint-config": "0.1.0-alpha.1",
     "@types/node": "22.20.1",
     "@types/vscode": "1.125.0",
     "@vscode/vsce": "3.9.2",
-    "oxfmt": "0.62.0",
-    "oxlint": "1.77.0",
+    "oxfmt": "0.63.0",
+    "oxlint": "1.78.0",
     "oxlint-tsgolint": "7.0.2001",
     "typescript": "7.0.2"
   },

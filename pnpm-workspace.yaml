@@ -4,6 +4,7 @@ allowBuilds:
 
 minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
+  - "@2h2d/*"
   - form-data@4.0.6
 trustPolicy: no-downgrade
 trustPolicyExclude:

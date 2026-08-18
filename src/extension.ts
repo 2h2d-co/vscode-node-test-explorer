@@ -38,17 +38,65 @@ type RunPlan = {
 
 type NodeTestEvent = {
   type: string;
-  data?: {
-    file?: string;
-    line?: number;
-    column?: number;
-    name?: string;
-    message?: string;
-    details?: {
-      duration_ms?: number;
-      error?: unknown;
-    };
-  };
+  data?: NodeTestEventData;
+};
+
+type NodeTestEventData = {
+  file?: string;
+  line?: number;
+  column?: number;
+  name?: string;
+  message?: string;
+  details?: NodeTestEventDetails;
+};
+
+type NodeTestEventDetails = {
+  duration_ms?: number;
+  error?: unknown;
+};
+
+type NodeTestEventCandidate = {
+  type?: unknown;
+  data?: unknown;
+};
+
+type NodeTestEventDataCandidate = {
+  file?: unknown;
+  line?: unknown;
+  column?: unknown;
+  name?: unknown;
+  message?: unknown;
+  details?: unknown;
+};
+
+type NodeTestEventDetailsCandidate = {
+  duration_ms?: unknown;
+  error?: unknown;
+};
+
+type LocatedNodeTestEventData = NodeTestEventData & {
+  file: string;
+  line: number;
+  column: number;
+};
+
+type FailureDetails = {
+  message: string;
+  stack?: string | undefined;
+};
+
+type FailureProperties = {
+  cause?: unknown;
+  failureType?: unknown;
+  inspect?: unknown;
+  message?: unknown;
+  stack?: unknown;
+};
+
+type FailureStringProperty = "failureType" | "inspect" | "message" | "stack";
+
+type NamedFunction = {
+  readonly name: string;
 };
 
 const UNTRUSTED_WORKSPACE_RUN_MESSAGE =
@@ -867,8 +915,53 @@ function handleNodeTestReporterLine(
 }
 
 function isNodeTestEvent(value: unknown): value is NodeTestEvent {
+  if (!isNodeTestEventCandidate(value) || !isString(value.type)) {
+    return false;
+  }
+  return value.data === undefined || isNodeTestEventData(value.data);
+}
+
+function isNodeTestEventCandidate(value: unknown): value is NodeTestEventCandidate {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNodeTestEventData(value: unknown): value is NodeTestEventData {
+  if (!isNodeTestEventDataCandidate(value)) {
+    return false;
+  }
   return (
-    typeof value === "object" && value !== null && "type" in value && typeof value.type === "string"
+    (value.file === undefined || isString(value.file)) &&
+    (value.line === undefined || isNumber(value.line)) &&
+    (value.column === undefined || isNumber(value.column)) &&
+    (value.name === undefined || isString(value.name)) &&
+    (value.message === undefined || isString(value.message)) &&
+    (value.details === undefined || isNodeTestEventDetails(value.details))
+  );
+}
+
+function isNodeTestEventDataCandidate(value: unknown): value is NodeTestEventDataCandidate {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNodeTestEventDetails(value: unknown): value is NodeTestEventDetails {
+  if (!isNodeTestEventDetailsCandidate(value)) {
+    return false;
+  }
+  return value.duration_ms === undefined || isNumber(value.duration_ms);
+}
+
+function isNodeTestEventDetailsCandidate(value: unknown): value is NodeTestEventDetailsCandidate {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasNodeTestLocation(
+  value: NodeTestEventData | undefined,
+): value is LocatedNodeTestEventData {
+  return (
+    value !== undefined &&
+    Boolean(value.file) &&
+    value.line !== undefined &&
+    value.column !== undefined
   );
 }
 
@@ -877,7 +970,7 @@ function itemForNodeTestEvent(
   locationToItem: ReadonlyMap<string, vscode.TestItem>,
 ): vscode.TestItem | undefined {
   const data = event.data;
-  if (!data?.file || typeof data.line !== "number" || typeof data.column !== "number") {
+  if (!hasNodeTestLocation(data)) {
     return undefined;
   }
 
@@ -919,7 +1012,7 @@ function failureMessage(event: NodeTestEvent): string {
   return failureDetails(event).message;
 }
 
-function failureDetails(event: NodeTestEvent): { message: string; stack?: string | undefined } {
+function failureDetails(event: NodeTestEvent): FailureDetails {
   const details = failureDetailsForValue(event.data?.details?.error);
   if (details?.message) {
     return details;
@@ -927,9 +1020,7 @@ function failureDetails(event: NodeTestEvent): { message: string; stack?: string
   return { message: `${event.data?.name ?? "Test"} failed` };
 }
 
-function failureDetailsForValue(
-  value: unknown,
-): { message: string; stack?: string | undefined } | undefined {
+function failureDetailsForValue(value: unknown): FailureDetails | undefined {
   if (value instanceof Error) {
     return {
       message: value.message || value.name,
@@ -937,23 +1028,23 @@ function failureDetailsForValue(
     };
   }
 
-  if (typeof value === "string") {
+  if (isString(value)) {
     return { message: value };
   }
 
-  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+  if (isFailurePrimitive(value)) {
     return { message: `${value}` };
   }
 
-  if (typeof value === "symbol") {
+  if (isSymbol(value)) {
     return { message: value.description ? `Symbol(${value.description})` : "Symbol()" };
   }
 
-  if (typeof value === "function") {
+  if (isNamedFunction(value)) {
     return { message: `[Function ${value.name || "anonymous"}]` };
   }
 
-  if (!value || typeof value !== "object") {
+  if (!isFailureProperties(value)) {
     return undefined;
   }
 
@@ -981,7 +1072,31 @@ function failureDetailsForValue(
   return undefined;
 }
 
-function stringProperty(value: object, key: string): string | undefined {
+function isFailurePrimitive(value: unknown): value is bigint | boolean | number {
+  return typeof value === "number" || typeof value === "boolean" || typeof value === "bigint";
+}
+
+function isSymbol(value: unknown): value is symbol {
+  return typeof value === "symbol";
+}
+
+function isNamedFunction(value: unknown): value is NamedFunction {
+  return typeof value === "function";
+}
+
+function isFailureProperties(value: unknown): value is FailureProperties {
+  return typeof value === "object" && value !== null;
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+function isNumber(value: unknown): value is number {
+  return typeof value === "number";
+}
+
+function stringProperty(value: FailureProperties, key: FailureStringProperty): string | undefined {
   if (!(key in value)) {
     return undefined;
   }
@@ -992,10 +1107,10 @@ function stringProperty(value: object, key: string): string | undefined {
   }
 
   const property: unknown = descriptor.value;
-  return typeof property === "string" && property.length > 0 ? property : undefined;
+  return isString(property) && property.length > 0 ? property : undefined;
 }
 
-function jsonSummary(value: object): string | undefined {
+function jsonSummary(value: FailureProperties): string | undefined {
   try {
     const summary = JSON.stringify(value);
     return summary && summary !== "{}" ? summary : undefined;
@@ -1006,7 +1121,7 @@ function jsonSummary(value: object): string | undefined {
 
 function locationForNodeTestEvent(event: NodeTestEvent): vscode.Location | undefined {
   const data = event.data;
-  if (!data?.file || typeof data.line !== "number" || typeof data.column !== "number") {
+  if (!hasNodeTestLocation(data)) {
     return undefined;
   }
 
