@@ -103,7 +103,6 @@ const UNTRUSTED_WORKSPACE_RUN_MESSAGE =
   "Running node:test requires trusting this workspace because it executes workspace code.";
 
 function observeDiscovery(promise: Promise<void>): void {
-  // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- The extension event boundary reports unexpected discovery failures to its host log.
   promise.catch((error: unknown) => {
     console.error("Unexpected node:test discovery failure.", error);
   });
@@ -176,7 +175,6 @@ export function activate(context: vscode.ExtensionContext): void {
     let root: SgNode;
     try {
       root = (await parseAsync(language, source)).root();
-      // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- Parse failures are displayed on the corresponding test item.
     } catch (error) {
       let fileItem = controller.items.get(uri.toString());
       if (!fileItem) {
@@ -453,7 +451,6 @@ export function activate(context: vscode.ExtensionContext): void {
           // oxlint-disable-next-line no-await-in-loop -- one test process at a time keeps output ordering stable.
           await runNodeTestFile(context, plan, token, run, locationToItem, nodePath);
         }
-        // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- Run failures are rendered in the VS Code test output before the run ends.
       } catch (error) {
         run.appendOutput(`${error instanceof Error ? error.message : String(error)}\r\n`);
       } finally {
