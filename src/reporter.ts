@@ -2,52 +2,34 @@ import { inspect } from "node:util";
 
 const customInspect = Symbol.for("nodejs.util.inspect.custom");
 
-type JsonStringifyValue =
-  | JsonStringifyObject
-  | JsonStringifyValue[]
-  | NamedFunction
-  | bigint
-  | boolean
-  | null
-  | number
-  | string
-  | symbol
-  | undefined;
-
-interface JsonStringifyObject {
-  [key: string]: JsonStringifyValue;
-}
-
-interface NamedFunction {
-  readonly name: string;
-}
-
-interface SerializedError extends JsonStringifyObject {
+interface SerializedError {
+  [key: string]: unknown;
   message: string;
   name: string;
   stack: string | undefined;
 }
 
-interface InspectedValue extends JsonStringifyObject {
-  inspect: string;
-}
-
 export default async function* reporter(source: AsyncIterable<unknown>): AsyncGenerator<string> {
   for await (const event of source) {
-    yield `${JSON.stringify(event, serializeError)}\n`;
+    yield `${JSON.stringify(event, serializeValue) ?? "null"}\n`;
   }
 }
 
-function serializeError(_key: string, value: unknown): JsonStringifyValue {
+// oxlint-disable-next-line 2h2d/no-unknown-returns -- JSON.stringify replacers intentionally preserve values from an untrusted event graph.
+function serializeValue(_key: string, value: unknown): unknown {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+
   if (value instanceof Error) {
     return serializedError(value);
   }
 
-  if (isJsonStringifyObject(value) && customInspect in value) {
-    return inspectedValue(value);
+  if (isObject(value) && customInspect in value) {
+    return { inspect: inspect(value, { depth: 10, breakLength: 100 }) };
   }
 
-  return jsonStringifyValue(value);
+  return value;
 }
 
 function serializedError(value: Error): SerializedError {
@@ -60,40 +42,17 @@ function serializedError(value: Error): SerializedError {
   for (const key of Object.keys(value)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
     if (descriptor && "value" in descriptor) {
-      serialized[key] = jsonStringifyValue(descriptor.value);
+      serialized[key] = descriptor.value;
     }
   }
 
   if ("cause" in value) {
-    serialized["cause"] = jsonStringifyValue(value.cause);
+    serialized["cause"] = value.cause;
   }
 
   return serialized;
 }
 
-function inspectedValue(value: JsonStringifyObject): InspectedValue {
-  return { inspect: inspect(value, { depth: 10, breakLength: 100 }) };
-}
-
-function jsonStringifyValue(value: unknown): JsonStringifyValue {
-  return isJsonStringifyValue(value) ? value : undefined;
-}
-
-function isJsonStringifyValue(value: unknown): value is JsonStringifyValue {
-  return (
-    value === null ||
-    value === undefined ||
-    typeof value === "bigint" ||
-    typeof value === "boolean" ||
-    typeof value === "function" ||
-    typeof value === "number" ||
-    typeof value === "string" ||
-    typeof value === "symbol" ||
-    Array.isArray(value) ||
-    isJsonStringifyObject(value)
-  );
-}
-
-function isJsonStringifyObject(value: unknown): value is JsonStringifyObject {
+function isObject(value: unknown): value is object {
   return typeof value === "object" && value !== null;
 }

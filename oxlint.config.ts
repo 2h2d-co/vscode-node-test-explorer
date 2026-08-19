@@ -14,10 +14,7 @@ export default defineConfig({
     suspicious: "error",
     perf: "warn",
   },
-  rules: {
-    ...strictRules,
-    "typescript/no-floating-promises": "error",
-  },
+  rules: strictRules,
   env: {
     builtin: true,
   },

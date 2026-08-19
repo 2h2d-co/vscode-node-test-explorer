@@ -31,6 +31,7 @@
     "compile": "tsc -p .",
     "watch": "tsc -w -p .",
     "typecheck": "tsc --noEmit -p . && tsc -p scripts/tsconfig.json",
+    "test": "node --test --test-concurrency=1 scripts/*.test.ts",
     "lint": "oxlint --deny-warnings",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
