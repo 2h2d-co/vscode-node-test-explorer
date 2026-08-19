@@ -156,7 +156,6 @@ export function activate(context: vscode.ExtensionContext): void {
         uri,
         Buffer.from(await vscode.workspace.fs.readFile(uri)).toString("utf8"),
       );
-      // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- Discovery failures are displayed on the corresponding test item.
     } catch (error) {
       const fileItem = controller.items.get(uri.toString());
       if (fileItem) {
@@ -187,7 +186,6 @@ export function activate(context: vscode.ExtensionContext): void {
       return;
     }
 
-    // oxlint-disable-next-line 2h2d/no-silent-error-suppression -- The unresolved path remains a stable location key when canonicalization fails.
     const canonicalFilePath = await realpath(uri.fsPath).catch(() => uri.fsPath);
     const directImports = new Map<string, TestKind>();
     const namespaceImports = new Set<string>();
