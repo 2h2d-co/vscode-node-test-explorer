@@ -16,6 +16,8 @@ export default defineConfig({
   },
   rules: {
     ...strictRules,
+    // A spread followed by reverse creates one intentional snapshot; toReversed would copy twice.
+    "unicorn/no-array-reverse": "off",
     // Release tooling sorts fresh, locally owned arrays without allocating a redundant copy.
     "unicorn/no-array-sort": "off",
   },
