@@ -18,6 +18,8 @@ export default defineConfig({
     ...strictRules,
     // Immutable map projections must not be replaced with mutations based on incomplete alias analysis.
     "oxc/no-map-spread": "off",
+    // Nested function identity and lexical locality can be intentional even without captured values.
+    "unicorn/consistent-function-scoping": "off",
     // A spread followed by reverse creates one intentional snapshot; toReversed would copy twice.
     "unicorn/no-array-reverse": "off",
     // Release tooling sorts fresh, locally owned arrays without allocating a redundant copy.
