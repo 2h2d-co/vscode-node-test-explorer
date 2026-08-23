@@ -13,8 +13,8 @@ importers:
         version: 0.45.1
     devDependencies:
       '@2h2d/oxlint-config':
-        specifier: 0.1.0-alpha.6
-        version: 0.1.0-alpha.6(oxlint@1.78.0(oxlint-tsgolint@7.0.2001))
+        specifier: 0.1.0-alpha.10
+        version: 0.1.0-alpha.10(oxlint-tsgolint@7.0.2001)(oxlint@1.78.0(oxlint-tsgolint@7.0.2001))
       '@types/node':
         specifier: 22.20.1
         version: 22.20.1
@@ -39,11 +39,12 @@ importers:
 
 packages:
 
-  '@2h2d/oxlint-config@0.1.0-alpha.6':
-    resolution: {integrity: sha512-vuj4jtTDzcgT7gHEksyDE1DMwWvprUQBCk9jRjei/m6LkvDay8lMgeWofstuipcw3zuT8gg/BTFrPfrfjNrJmw==}
+  '@2h2d/oxlint-config@0.1.0-alpha.10':
+    resolution: {integrity: sha512-rUnOAoACgxjq3NvlS44koOv+Ztk4QjKoiEecK0ix6vtgRm8p3v5MXymbnE/XI/YRF/WFYjyfjtFZYD0z9lszHQ==}
     engines: {node: '>=22.19.0'}
     peerDependencies:
       oxlint: 1.78.0
+      oxlint-tsgolint: 7.0.2001
 
   '@ast-grep/napi-darwin-arm64@0.45.1':
     resolution: {integrity: sha512-CthYcA0H3z5A2EHKH4rhSuFzpYUtxqUMnohmejxtMS6wiAgriKhOCopxN8XKclspYMtQyX2GC/PbvcU3dIbQHw==}
@@ -1616,10 +1617,11 @@ packages:
 
 snapshots:
 
-  '@2h2d/oxlint-config@0.1.0-alpha.6(oxlint@1.78.0(oxlint-tsgolint@7.0.2001))':
+  '@2h2d/oxlint-config@0.1.0-alpha.10(oxlint-tsgolint@7.0.2001)(oxlint@1.78.0(oxlint-tsgolint@7.0.2001))':
     dependencies:
       '@oxlint/plugins': 1.78.0
       oxlint: 1.78.0(oxlint-tsgolint@7.0.2001)
+      oxlint-tsgolint: 7.0.2001
 
   '@ast-grep/napi-darwin-arm64@0.45.1':
     optional: true

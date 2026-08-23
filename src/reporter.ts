@@ -15,7 +15,6 @@ export default async function* reporter(source: AsyncIterable<unknown>): AsyncGe
   }
 }
 
-// oxlint-disable-next-line 2h2d/no-unknown-returns -- JSON.stringify replacers intentionally preserve values from an untrusted event graph.
 function serializeValue(_key: string, value: unknown): unknown {
   if (typeof value === "bigint") {
     return value.toString();
