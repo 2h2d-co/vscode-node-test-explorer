@@ -14,7 +14,11 @@ export default defineConfig({
     suspicious: "error",
     perf: "warn",
   },
-  rules: strictRules,
+  rules: {
+    ...strictRules,
+    // Release tooling sorts fresh, locally owned arrays without allocating a redundant copy.
+    "unicorn/no-array-sort": "off",
+  },
   env: {
     builtin: true,
   },

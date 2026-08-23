@@ -60,8 +60,8 @@ run(process.execPath, packageArgs, root);
 
 const expectedFiles = vsixTargets
   .map((target) => `${manifest.name}-${parsedVersion.extensionVersion}-${target.name}.vsix`)
-  .toSorted();
-const actualFiles = (await readdir(output)).toSorted();
+  .sort();
+const actualFiles = (await readdir(output)).sort();
 if (JSON.stringify(actualFiles) !== JSON.stringify(expectedFiles)) {
   throw new Error(
     `Unexpected VSIX artifacts:\nexpected ${expectedFiles.join(", ")}\nactual ${actualFiles.join(", ")}`,

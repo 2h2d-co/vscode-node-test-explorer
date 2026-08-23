@@ -163,10 +163,7 @@ async function updateStableChangelog(extensionVersion: string): Promise<void> {
 }
 
 function assertStagedReleaseFiles(prerelease: boolean): void {
-  const files = gitOutput(["diff", "--cached", "--name-only"])
-    .split("\n")
-    .filter(Boolean)
-    .toSorted();
+  const files = gitOutput(["diff", "--cached", "--name-only"]).split("\n").filter(Boolean).sort();
   const expected = prerelease ? ["package.json"] : ["CHANGELOG.md", "package.json"];
   if (JSON.stringify(files) !== JSON.stringify(expected)) {
     throw new Error(`Release metadata changed unexpected files: ${files.join(", ")}`);
