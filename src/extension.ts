@@ -185,6 +185,7 @@ export function activate(context: vscode.ExtensionContext): void {
       return;
     }
 
+    // oxlint-disable-next-line 2h2d/require-promise-rejection-parameter -- Missing paths intentionally fall back to the original VS Code URI path.
     const canonicalFilePath = await realpath(uri.fsPath).catch(() => uri.fsPath);
     const directImports = new Map<string, TestKind>();
     const namespaceImports = new Set<string>();
