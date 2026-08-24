@@ -15,6 +15,9 @@ importers:
       '@2h2d/oxlint-config':
         specifier: 0.1.0
         version: 0.1.0(oxlint-tsgolint@7.0.2001)(oxlint@1.78.0(oxlint-tsgolint@7.0.2001))
+      '@2h2d/ts-config':
+        specifier: 0.0.1
+        version: 0.0.1(typescript@7.0.2)
       '@types/node':
         specifier: 22.20.1
         version: 22.20.1
@@ -45,6 +48,12 @@ packages:
     peerDependencies:
       oxlint: 1.78.0
       oxlint-tsgolint: 7.0.2001
+
+  '@2h2d/ts-config@0.0.1':
+    resolution: {integrity: sha512-w6BPbLQbP2Vf0vkFP7C6V8Npe+2y+wMWXpZGsIcBvEbOowiSL8mmEZLMSyixYcDAoBFMvd4kEaUh6ycqUSF3kw==}
+    engines: {node: '>=22.19.0'}
+    peerDependencies:
+      typescript: 7.0.2
 
   '@ast-grep/napi-darwin-arm64@0.45.1':
     resolution: {integrity: sha512-CthYcA0H3z5A2EHKH4rhSuFzpYUtxqUMnohmejxtMS6wiAgriKhOCopxN8XKclspYMtQyX2GC/PbvcU3dIbQHw==}
@@ -1622,6 +1631,10 @@ snapshots:
       '@oxlint/plugins': 1.78.0
       oxlint: 1.78.0(oxlint-tsgolint@7.0.2001)
       oxlint-tsgolint: 7.0.2001
+
+  '@2h2d/ts-config@0.0.1(typescript@7.0.2)':
+    dependencies:
+      typescript: 7.0.2
 
   '@ast-grep/napi-darwin-arm64@0.45.1':
     optional: true
