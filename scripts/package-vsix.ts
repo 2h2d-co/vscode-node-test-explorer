@@ -65,7 +65,6 @@ if (!astGrepVersion) {
 
 const packagedVsixPaths: string[] = [];
 for (const target of options.targets) {
-  // oxlint-disable-next-line no-await-in-loop -- each target needs an isolated native dependency install.
   const vsixPath = await packageTarget(rootPackage, astGrepVersion, target, options.preRelease);
   packagedVsixPaths.push(vsixPath);
 }

@@ -131,7 +131,6 @@ export function activate(context: vscode.ExtensionContext): void {
     ).flat();
 
     for (let index = 0; index < uris.length; index += 4) {
-      // oxlint-disable-next-line no-await-in-loop -- bounded parse concurrency protects the extension host.
       await Promise.all(uris.slice(index, index + 4).map((uri) => discoverUri(uri)));
     }
   }
@@ -446,7 +445,6 @@ export function activate(context: vscode.ExtensionContext): void {
           for (const item of plan.items) {
             enqueueTree(item, excluded, run);
           }
-          // oxlint-disable-next-line no-await-in-loop -- one test process at a time keeps output ordering stable.
           await runNodeTestFile(context, plan, token, run, locationToItem, nodePath);
         }
       } catch (error) {

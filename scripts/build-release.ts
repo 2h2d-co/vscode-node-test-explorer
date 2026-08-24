@@ -70,7 +70,6 @@ if (JSON.stringify(actualFiles) !== JSON.stringify(expectedFiles)) {
 
 const manifestLines: string[] = [];
 for (const name of expectedFiles) {
-  // oxlint-disable-next-line no-await-in-loop -- release files are hashed in canonical order.
   const contents = await readFile(join(output, name));
   const digest = createHash("sha256").update(contents).digest("hex");
   manifestLines.push(`${digest}  ${name}`);
