@@ -24,6 +24,8 @@ export default defineConfig({
     "unicorn/no-array-reverse": "off",
     // Release tooling sorts fresh, locally owned arrays without allocating a redundant copy.
     "unicorn/no-array-sort": "off",
+    // A bare empty export can define module semantics; the native rule removes only redundant ones.
+    "unicorn/require-module-specifiers": "off",
   },
   env: {
     builtin: true,
