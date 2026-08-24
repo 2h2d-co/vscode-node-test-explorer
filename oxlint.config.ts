@@ -18,6 +18,8 @@ export default defineConfig({
     ...strictRules,
     // Leading and trailing underscores are a naming choice; computed access is not an improvement.
     "no-underscore-dangle": "off",
+    // Express 4 rejection forwarding is inapplicable to Express 5 and this non-Express project.
+    "oxc/no-async-endpoint-handlers": "off",
     // Immutable map projections must not be replaced with mutations based on incomplete alias analysis.
     "oxc/no-map-spread": "off",
     // Nested function identity and lexical locality can be intentional even without captured values.
