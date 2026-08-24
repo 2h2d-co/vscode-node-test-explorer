@@ -16,6 +16,8 @@ export default defineConfig({
   },
   rules: {
     ...strictRules,
+    // Leading and trailing underscores are a naming choice; computed access is not an improvement.
+    "no-underscore-dangle": "off",
     // Immutable map projections must not be replaced with mutations based on incomplete alias analysis.
     "oxc/no-map-spread": "off",
     // Nested function identity and lexical locality can be intentional even without captured values.
