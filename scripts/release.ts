@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { isString, parseJsonObject } from "./lib/json.ts";
 import type { JsonObject } from "./lib/json.ts";
-import { parseReleaseVersion } from "./lib/release-version.ts";
+import { isValidReleaseMetadataFiles, parseReleaseVersion } from "./lib/release-version.ts";
 
 type PackageJson = JsonObject & {
   name: string;
@@ -164,8 +164,7 @@ async function updateStableChangelog(extensionVersion: string): Promise<void> {
 
 function assertStagedReleaseFiles(prerelease: boolean): void {
   const files = gitOutput(["diff", "--cached", "--name-only"]).split("\n").filter(Boolean).sort();
-  const expected = prerelease ? ["package.json"] : ["CHANGELOG.md", "package.json"];
-  if (JSON.stringify(files) !== JSON.stringify(expected)) {
+  if (!isValidReleaseMetadataFiles(files, prerelease)) {
     throw new Error(`Release metadata changed unexpected files: ${files.join(", ")}`);
   }
 }

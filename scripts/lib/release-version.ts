@@ -14,3 +14,15 @@ export function parseReleaseVersion(version: string): ReleaseVersion {
   }
   return { extensionVersion, prerelease: match[2] !== undefined };
 }
+
+export function isValidReleaseMetadataFiles(
+  files: readonly string[],
+  prerelease: boolean,
+): boolean {
+  return (
+    (prerelease && files.length === 1 && files[0] === "package.json") ||
+    (!prerelease &&
+      files[0] === "CHANGELOG.md" &&
+      (files.length === 1 || (files.length === 2 && files[1] === "package.json")))
+  );
+}
