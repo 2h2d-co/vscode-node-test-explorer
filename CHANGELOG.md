@@ -4,6 +4,8 @@ All notable changes to this extension are documented here.
 
 ## Unreleased
 
+## 0.0.19 - 2026-08-27
+
 ### Changed
 
 - Adopt the shared 2h2d Oxlint policy, including the blanket ban on non-const type assertions.
