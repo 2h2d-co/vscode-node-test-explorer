@@ -44,7 +44,7 @@
     "release": "node scripts/release.ts"
   },
   "dependencies": {
-    "@ast-grep/napi": "0.45.1"
+    "@ast-grep/napi": "0.45.2"
   },
   "devDependencies": {
     "@2h2d/oxlint-config": "0.1.1",
