@@ -49,7 +49,7 @@
   "devDependencies": {
     "@2h2d/oxlint-config": "0.1.1",
     "@2h2d/ts-config": "0.0.1",
-    "@types/node": "22.20.1",
+    "@types/node": "22.20.2",
     "@types/vscode": "1.134.0",
     "@vscode/vsce": "3.9.2",
     "oxfmt": "0.64.0",
