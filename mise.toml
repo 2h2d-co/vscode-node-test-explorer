@@ -4,7 +4,7 @@ locked = true
 minimum_release_age = "7d"
 
 [tools]
-hk = { version = "1.56.0", postinstall = "hk install --mise" }
+hk = { version = "2.0.1", postinstall = "hk install --mise" }
 betterleaks = "1.8.1"
 cocogitto = "7.0.0"
 actionlint = "1.7.12"
