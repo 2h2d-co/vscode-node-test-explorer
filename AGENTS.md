@@ -6,7 +6,7 @@ vscode-node-tests is a VS Code Test Explorer extension for modern ESM `node:test
 
 - Format commit messages according to [Conventional Commits](https://www.conventionalcommits.org/).
 - Maintain `CHANGELOG.md` using the [Keep a Changelog](https://keepachangelog.com/) style.
-- Run `pnpm check` before committing meaningful code changes.
+- Run `mise run check` before committing meaningful code changes. It runs `pnpm check` and `pnpm test`.
 - Add changelog entries for changes whose commit would be `feat:` or `fix:`; keep entries under `Unreleased` until a release is made.
 - Create releases from clean, synchronized `main` with:
 
