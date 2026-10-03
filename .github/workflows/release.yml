@@ -346,7 +346,7 @@ jobs:
           corepack enable pnpm
           test "$(corepack pnpm@11.28.0 --version)" = 11.28.0
           corepack pnpm@11.28.0 --dir publishing-client install --frozen-lockfile --ignore-scripts
-          test "$(corepack pnpm@11.28.0 --dir publishing-client exec vsce --version)" = 3.9.2
+          test "$(corepack pnpm@11.28.0 --dir publishing-client exec vsce --version)" = 4.0.0
 
       - name: Publish verified VSIX artifacts
         shell: bash

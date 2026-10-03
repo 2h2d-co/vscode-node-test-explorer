@@ -4,6 +4,12 @@ All notable changes to this extension are documented here.
 
 ## Unreleased
 
+### Changed
+
+- Raise the minimum supported VS Code version from 1.134 to 1.138.
+- Package and publish VSIX files with `@vscode/vsce` 4.0.0.
+- Update the ast-grep runtime used for test discovery.
+
 ## 0.0.19 - 2026-08-27
 
 ### Changed
