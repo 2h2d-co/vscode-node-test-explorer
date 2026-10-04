@@ -60,8 +60,8 @@ Use the local `mise.toml`:
 ```sh
 mise trust
 mise install
-pnpm install
-pnpm check
+mise run init
+mise run check
 pnpm compile
 pnpm package
 pnpm package:pre-release
@@ -70,7 +70,7 @@ pnpm package:pre-release:all
 
 Generated VSIX files are written under `artifacts/vsix/`.
 
-`mise.toml` pins Node and pnpm and adds `node_modules/.bin` to `PATH`.
+`mise.toml` pins Node and pnpm. hk runs Oxfmt, Oxlint, and TypeScript from `node_modules/.bin`.
 
 ## Releasing
 

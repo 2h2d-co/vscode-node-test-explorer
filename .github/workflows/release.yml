@@ -45,7 +45,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Check
-        run: pnpm check
+        run: hk check --all --check
 
       - name: Build release artifacts
         shell: bash

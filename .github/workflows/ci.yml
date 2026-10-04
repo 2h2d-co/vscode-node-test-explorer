@@ -33,14 +33,14 @@ jobs:
           install_args: --locked
           cache: false
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Install dependencies and Git hooks
+        run: mise run init
 
       - name: Audit dependencies
         run: pnpm audit
 
       - name: Check
-        run: pnpm check
+        run: hk check --all --check
 
       - name: Test
         run: pnpm test

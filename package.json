@@ -35,7 +35,6 @@
     "lint": "oxlint --deny-warnings",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "check": "hk check --all --check",
     "build:release": "node scripts/build-release.ts",
     "package": "pnpm compile && node scripts/package-vsix.ts",
     "package:all": "pnpm compile && node scripts/package-vsix.ts --all-targets",
