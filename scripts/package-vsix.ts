@@ -36,6 +36,8 @@ type PackageOptions = {
 
 const root = process.cwd();
 const staging = join(root, ".vscode-vsix-staging");
+// Call the locked vsce from this repository so the script works without node_modules/.bin on PATH.
+const vsce = join(root, "node_modules", ".bin", "vsce");
 const options = packageOptions(process.argv.slice(2));
 const outputDir = isAbsolute(options.outDir) ? options.outDir : join(root, options.outDir);
 const parsedPackage: unknown = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
@@ -68,7 +70,7 @@ if (options.publish) {
     publishArgs.push("--pre-release");
   }
   publishArgs.push("--packagePath", ...packagedVsixPaths);
-  await run("vsce", publishArgs, root);
+  await run(vsce, publishArgs, root);
 }
 
 async function packageTarget(
@@ -145,7 +147,7 @@ async function packageTarget(
   if (preRelease) {
     packageArgs.push("--pre-release");
   }
-  await run("vsce", packageArgs, staging);
+  await run(vsce, packageArgs, staging);
 
   console.log(`Packaged ${vsixPath}`);
   return vsixPath;
