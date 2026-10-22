@@ -15,12 +15,11 @@ jobs:
   build:
     name: Build VSIX artifacts
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     outputs:
-      artifact-digest: ${{ steps.upload.outputs.artifact-digest }}
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
-      extension-version: ${{ steps.release.outputs.extension_version }}
       prerelease: ${{ steps.release.outputs.prerelease }}
     steps:
       - name: Distrust compromised eMudhra CA roots
@@ -97,6 +96,7 @@ jobs:
     name: Publish GitHub release
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: github-release
     permissions:
       attestations: write # Required to persist VSIX artifact attestations.
@@ -248,6 +248,7 @@ jobs:
     name: Publish to VS Code Marketplace
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: vscode-marketplace
     permissions:
       contents: read
