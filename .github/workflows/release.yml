@@ -387,9 +387,9 @@ jobs:
           test "$(node --version)" = v22.23.4
           test "$(npm --version)" = 10.9.9
           corepack enable pnpm
-          test "$(corepack pnpm@12.15.0 --version)" = 12.15.0
-          corepack pnpm@12.15.0 --dir publishing-client install --frozen-lockfile --ignore-scripts
-          test "$(corepack pnpm@12.15.0 --dir publishing-client exec vsce --version)" = 4.0.0
+          test "$(corepack pnpm@12.16.0 --version)" = 12.16.0
+          corepack pnpm@12.16.0 --dir publishing-client install --frozen-lockfile --ignore-scripts
+          test "$(corepack pnpm@12.16.0 --dir publishing-client exec vsce --version)" = 4.0.0
 
       - name: Publish verified VSIX artifacts
         shell: bash
@@ -408,4 +408,4 @@ jobs:
             exit 1
           fi
           args+=(--packagePath "${vsix_files[@]}")
-          corepack pnpm@12.15.0 --dir publishing-client exec vsce "${args[@]}"
+          corepack pnpm@12.16.0 --dir publishing-client exec vsce "${args[@]}"
