@@ -5,7 +5,7 @@ locked = true
 minimum_release_age = "7d"
 
 [tools]
-hk = { version = "2.8.0", workflow = "release.yml", postinstall = "hk install --mise" }
+hk = { version = "2.10.0", workflow = "release.yml", postinstall = "hk install --mise" }
 betterleaks = "1.9.0"
 cocogitto = "7.0.0"
 jactionlint = "2.3.0"
