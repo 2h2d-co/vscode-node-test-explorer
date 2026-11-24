@@ -85,7 +85,7 @@
   "engines": {
     "vscode": "^1.138.0"
   },
-  "packageManager": "pnpm@12.16.0",
+  "packageManager": "pnpm@12.21.0",
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
